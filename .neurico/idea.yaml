@@ -1,0 +1,35 @@
+idea:
+  title: Scientific Idea Generation with Grounded Novelty
+  domain: artificial_intelligence
+  hypothesis: 'Large language models can generate higher quality scientific ideas
+    when the notion of novelty is grounded through deduction, induction, proposal
+    writing, outcome imagination, small experiments, or literature comparison, as
+    opposed to unguided generation.
+
+    '
+  background:
+    description: 'A few recent papers including "Generating Literature-Driven Scientific
+      Theories at Scale" and "Heuristic-Based Ideation for Guiding LLMs Toward Structured
+      Creativity" worked on scientific idea generation. However, LLMs are still widely
+      believed not able to generate good ideas. It relates to the fact that novelty
+      is hard to define, either LLMs are criticized as generating incremental ideas
+      or too crazy ideas. The hypothesis is that LLM can handle the abstract notion
+      of novelty better when grounded. The ground can be both deduction and induction,
+      writing out a proposal and imagining the best possible outcome, running a small
+      experiment, and making comparisons in existing literature. Try these approaches
+      and see if we can have better idea generation.
+
+      '
+    papers:
+    - description: '"Generating Literature-Driven Scientific Theories at Scale." (https://arxiv.org/abs/2601.16282)'
+    - description: '"Heuristic-Based Ideation for Guiding LLMs Toward Structured Creativity."
+        (https://cichicago.substack.com/p/heuristic-based-ideation-for-guiding)'
+  metadata:
+    author: Chenhao Tan
+    source: IdeaHub
+    source_url: https://hypogenic.ai/ideahub/idea/b79u7nCRP6kCV4Y3ORs8
+    idea_id: scientific_idea_generation_wit_20260618_181205_33cf9f52
+    created_at: '2026-06-18T18:12:05.706430'
+    status: submitted
+    github_repo_name: grounded-novelty-ai-69c6-claude
+    github_repo_url: https://github.com/Hypogenic-AI/grounded-novelty-ai-69c6-claude
