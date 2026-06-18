@@ -1,0 +1,16 @@
+# Exclude all data files (can be large), but keep docs and small samples.
+# Note: to re-include a file in a subdir, the subdir itself must be re-included first.
+*
+!.gitignore
+!README.md
+
+# Re-include subdirectories so nested docs/samples below are reachable
+!*/
+
+# Within any subdirectory, exclude everything then keep only docs/small samples
+*/**
+!**/README.md
+!**/samples.json
+!**/samples/
+!**/download.sh
+!**/download_instructions.txt

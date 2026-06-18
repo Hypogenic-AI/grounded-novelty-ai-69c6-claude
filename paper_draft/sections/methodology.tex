@@ -1,0 +1,37 @@
+\section{Methodology}
+\label{sec:method}
+
+\para{Research question.} Do LLMs generate higher-quality scientific ideas---more novel \emph{and} still feasible---when the abstract notion of novelty is grounded through one of six mechanisms, versus unguided generation, holding the backbone model, seed topic, and output format fixed? We decompose this into five hypotheses. \textbf{H1} (objective novelty): grounded conditions produce ideas with greater embedding distance to prior work. \textbf{H2} (judged quality): grounded conditions score higher on the rubric and win $>50\%$ of pairwise comparisons. \textbf{H3} (no feasibility collapse): grounding does not significantly reduce feasibility. \textbf{H4} (diversity): grounding increases set-level diversity. \textbf{H5} (evaluation): judge novelty correlates with the objective metric; if not, this supports the novelty-mirage caution.
+
+\subsection{Design}
+
+We use a fully crossed $7~(\text{condition}) \times 7~(\text{topic})$ design with 5 replicates per cell, for $7 \times 7 \times 5 = 245$ ideas. The independent variable is the grounding condition; topic is a blocking variable; the backbone, sampling parameters, seed text, and output schema are fixed.
+
+\para{Critical control.} Every condition emits the \emph{identical} idea JSON schema (\texttt{title}, \texttt{problem}, \texttt{motivation}, \texttt{method}, \texttt{experiment\_plan}); only the reasoning \emph{scaffold} preceding the idea differs. This isolates grounding from the output-format and length confounds noted by \citet{si2024can}, whose AI ideas were systematically longer than human ones. Mean idea length is balanced across conditions (199--236 words), and we log idea length and re-run every test with length as a covariate. All effects are robust to this covariate, with $p$-values essentially unchanged (\secref{sec:results}), so our results are not a length artifact.
+
+\para{Conditions.} The seven scaffolds, all ending in the same schema, are:
+\begin{itemize}[leftmargin=*,itemsep=1pt,topsep=2pt]
+    \item \unguided (control): ``propose a novel idea on \textsc{topic},'' single shot.
+    \item \deduction: HypoGen Bit$\rightarrow$Flip$\rightarrow$Spark---state the prevailing assumption, invert it, derive the idea~\citep{hypogen2025}.
+    \item \induction: present concrete observations on the topic, induce a general hypothesis, then the idea~\citep{yang2023moose}.
+    \item \proposal: draft a full mini-proposal including expected results, then distill the idea~\citep{si2024can}.
+    \item \outcome: imagine the best plausible empirical outcome and the belief it would shift, then back out the idea~\citep{autodiscovery2025}.
+    \item \litcomp: retrieve 8 real prior papers, explicitly contrast, and revise the idea until distinct~\citep{wang2023scimon}.
+    \item \smallexp: design a falsification test, predict its result, self-critique, and refine~\citep{deepideation2025}.
+\end{itemize}
+
+\para{Topics.} We use the 7 NLP topics of \citet{si2024can}---Bias, Coding, Safety, Multilingual, Factuality, Math, and Uncertainty---phrased as identical standardized seeds across all conditions.
+
+\subsection{Models and corpus}
+
+\para{Backbone.} The generator is \gptfourone (temperature 0.8, top-$p$ 1.0, max 1600 tokens) with a per-cell deterministic seed, fixed across all conditions.
+
+\para{Judges.} We use two judges deliberately chosen \emph{off-family} from the backbone to limit self-preference: \claudesonnet and \geminiflash, both at temperature 0. Each scores the \citet{si2024can} 1--10 rubric (novelty, feasibility, effectiveness, overall) and renders pairwise preferences.
+
+\para{Objective metric.} Literature-Grounded Novelty (\lgn) is $1 - \max$ cosine similarity of an idea to the nearest prior-work abstract, using 150 recent abstracts per topic (1{,}050 total) retrieved from the Semantic Scholar Graph API and embedded with \mpnet. Higher \lgn means more distant from real prior work. No LLM opinion is involved, so \lgn is judge-independent by construction.
+
+\subsection{Metrics and statistical analysis}
+
+We report four metric families: (i)~\lgn (objective novelty, primary); (ii)~the 1--10 rubric scores; (iii)~pairwise win-rate of each grounded condition against the unguided control, controlling for position by running both orderings with both judges; and (iv)~set-level diversity, the mean pairwise embedding distance within a (condition $\times$ topic) cell, plus a near-duplicate rate (fraction of pairs with cosine $\geq 0.8$).
+
+For the per-idea metrics we fit a linear mixed-effects model, $\text{metric} \sim C(\text{condition}, \text{ref}=\unguided) + (1\,|\,\text{topic})$, reporting coefficients, 95\% confidence intervals, $p$-values, and Cohen's $d$ versus the control. We correct for multiple comparisons with the Holm procedure across the 6 grounded conditions, at $\alpha = 0.05$. Pairwise win-rates are tested against chance (0.5) with a $t$-test and bootstrap 95\% CI. For judge validation we report the Spearman correlation between the two judges' novelty scores (inter-judge agreement) and between mean judge novelty and \lgn (convergent validity). Seeds are fixed at 42 and every LLM call is cached on disk, so the full pipeline reproduces exactly: a second generation pass produced 245/245 cache hits and zero API calls. Total cost was roughly \$3--4 of API usage and about 25 minutes of runtime, with a single RTX A6000 used only for embeddings.

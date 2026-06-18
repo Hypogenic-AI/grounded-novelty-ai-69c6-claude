@@ -1,0 +1,899 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at .claude/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. VERIFY COMMAND TEMPLATES: Command templates (math.tex, general.tex, macros.tex) are pre-copied to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# Scientific Idea Generation with Grounded Novelty — Research Report
+
+## 1. Executive Summary
+
+**Research question (one sentence).** Do LLMs generate higher-quality scientific ideas when the
+abstract notion of *novelty* is **grounded** — through deduction, induction, proposal writing,
+outcome imagination, small experiments, or literature comparison — versus unguided generation,
+holding the backbone model, seed topic, and output format fixed?
+
+**Key finding (one sentence).** Grounding does **not** uniformly improve idea quality; instead each
+mechanism **steers the novelty–feasibility trade-off in a specific, metric-dependent way**, and the
+apparent novelty gains exist almost entirely in the *LLM judge's* eye — they vanish under an
+objective, literature-anchored novelty measure with which judge novelty is **completely
+uncorrelated** (Spearman ρ = 0.01).
+
+We ran the first controlled head-to-head ablation of the user's six grounding mechanisms plus an
+unguided control: one fixed backbone (`gpt-4.1`), the canonical 7 NLP ideation topics from Si et al.
+(2024), an identical output schema across all conditions, and N = 5 replicates per cell (**245
+ideas**). We evaluated with three independent lenses: an *objective* embedding metric (distance to
+real prior-work abstracts), a 2-judge off-family LLM rubric (Claude-Sonnet-4.5 + Gemini-2.5-Flash),
+and position-controlled pairwise comparisons against the control. The three lenses **disagree in a
+revealing way**, which is itself the headline result and a concrete confirmation of the "novelty
+mirage" warned about in the recent literature.
+
+**Practical implication.** Treat single-number LLM-judged "novelty" of generated ideas with
+skepticism. If you want ideas that are *judged* exciting and win head-to-head, use **literature
+comparison** or **deduction (Bit→Flip→Spark)** grounding — but expect a feasibility cost and *no*
+increase in genuine distance from prior work. Falsification-style "small experiment" grounding
+actively **hurts** novelty by pulling ideas toward already-published, safe techniques.
+
+---
+
+## 2. Research Question & Motivation
+
+LLM ideation is good enough that AI ideas were judged *more novel than expert humans* in a 100+
+researcher study (Si et al., 2024), yet the field still distrusts them because "novelty" is
+ill-defined: unguided LLMs oscillate between incremental rephrasings and implausible over-reaches.
+The user's hypothesis is that **grounding** the notion of novelty — anchoring it in a concrete
+reasoning process — moves ideas toward the novel-and-plausible sweet spot.
+
+**Gap filled.** Every strong prior system champions *one* grounding mechanism on *its own* dataset
+and metric (SciMON/CoI/Nova → literature comparison; MOOSE/causal-graph → induction; HypoGen →
+deduction; Si-agent/VirSci → proposal writing; AutoDiscovery → outcome imagination; Deep-Ideation →
+critic/small-experiment feedback). **No paper compares the six under one controlled protocol.** Two
+evaluation-skeptic papers — *All That Glitters Is Not Novel* (2025) and the *novelty-mirage*
+RQ-Bench study (2026) — further argue the *evaluation* must be grounded, not a single LLM's opinion.
+This report supplies both: the controlled ablation **and** a grounded-evaluation cross-check.
+
+---
+
+## 3. Experimental Setup
+
+- **Backbone generator (fixed across all conditions):** `gpt-4.1`, temperature 0.8, top_p 1.0,
+  per-cell deterministic seed, max 1600 tokens.
+- **Conditions (7):** `unguided` (control) + `deduction` (Bit→Flip→Spark), `induction`
+  (observations→hypothesis), `proposal_writing` (mini-proposal→distilled idea), `outcome_imagination`
+  (imagine best plausible result / belief-shift, then back out the idea), `literature_comparison`
+  (retrieve 8 real prior papers, contrast, revise to be distinct), `small_experiment` (design a
+  falsification test, predict its result, self-critique, revise).
+- **Critical control:** every condition emits the *identical* idea JSON
+  (`title, problem, motivation, method, experiment_plan`). Only the reasoning *scaffold* differs.
+  Mean idea length is balanced (199–236 words), and all effects are **robust to a length covariate**
+  (p-values essentially unchanged), so results are not a length/format artifact (the Si "AI ideas
+  are longer" confound is eliminated by design).
+- **Topics (7):** Bias, Coding, Safety, Multilingual, Factuality, Math, Uncertainty (Si et al. 2024
+  topic set), phrased as identical standardized seeds.
+- **Design:** 7 conditions × 7 topics × 5 replicates = **245 ideas**.
+- **Judges (2, deliberately off-family from the backbone to limit self-preference):**
+  `anthropic/claude-sonnet-4.5` and `google/gemini-2.5-flash`, temperature 0, scoring the Si 1–10
+  rubric (novelty, feasibility, effectiveness, overall) and pairwise preference.
+- **Objective metric:** Literature-Grounded Novelty (LGN) = 1 − max cosine similarity of an idea to
+  the nearest of **150 real prior-work abstracts/topic** (1050 total) retrieved from Semantic
+  Scholar, embedded with `all-mpnet-base-v2` on an RTX A6000. No LLM opinion involved.
+- **Reproducibility:** seed 42; every LLM call cached on disk (re-running the full pipeline is exact
+  and free — verified: a second generation pass produced 245/245 cache hits, 0 API calls). Hardware:
+  4× RTX A6000 (only 1 used, for embeddings). Total cost ≈ **$3–4** of API usage; runtime ≈ 25 min.
+- **Reproduce:** `python src/run_all.py` (or `--n 1` for a 49-idea pilot).
+
+---
+
+## 4. Results
+
+### 4.1 Objective literature-grounded novelty (LGN) — no grounding helps
+
+Mixed-effects model `lgn ~ C(condition, ref=unguided) + (1|topic)`, Holm-corrected across the 6
+grounded conditions. **Higher = more distant from real prior work.**
+
+| Condition | LGN mean | Cohen's d vs unguided | p | Holm p |
+|---|---|---|---|---|
+| unguided (control) | 0.188 | — | — | — |
+| deduction | 0.190 | +0.09 | 0.678 | 1.000 |
+| literature_comparison | 0.188 | +0.01 | 0.971 | 1.000 |
+| small_experiment | 0.181 | −0.19 | 0.334 | 1.000 |
+| outcome_imagination | 0.176 | −0.34 | 0.089 | 0.358 |
+| induction | 0.174 | −0.40 | 0.044 | 0.219 |
+| **proposal_writing** | **0.165** | **−0.66** | **0.001** | **0.007** ✓ |
+
+**No grounding mechanism significantly increases objective novelty.** The only Holm-significant
+effect is `proposal_writing` making ideas *more conventional* (closer to existing work). → **H1
+refuted.**
+
+### 4.2 Judge rubric (1–10) — the novelty–feasibility trade-off
+
+| Condition | Novelty | Feasibility | Overall |
+|---|---|---|---|
+| unguided | 5.49 | 7.20 | 5.44 |
+| **deduction** | **5.94** ✓ (d=+0.81) | 6.91 | 5.44 |
+| literature_comparison | 5.80 (d=+0.57, p=.012) | 6.83 | 5.36 |
+| outcome_imagination | 5.70 (d=+0.59) | 6.89 | 5.46 |
+| induction | 5.49 | **7.69** (d=+0.59) | 5.47 |
+| proposal_writing | 5.43 | **7.67** (d=+0.54) | 5.33 |
+| **small_experiment** | **5.17** (d=−0.64) | **7.84** ✓ (d=+0.77) | **5.11** ✗ (d=−0.91) |
+
+(✓ = Holm-significant gain, ✗ = Holm-significant loss vs control.)
+
+Two clean clusters emerge:
+- **"Generative" grounding** (deduction, literature_comparison, outcome_imagination) ↑ *judged
+  novelty* but ↓ feasibility.
+- **"Validation" grounding** (small_experiment, induction, proposal_writing) ↑ *feasibility* but
+  ↓/flat novelty.
+- **Overall** score: no condition beats the control; `small_experiment` is significantly *worse*.
+  → **H2 partially supported (judged novelty only, for 2–3 mechanisms); H3's trade-off confirmed.**
+
+### 4.3 Pairwise win-rate vs the unguided control (position-controlled, 2 judges × 2 orderings)
+
+| Condition | P(grounded ≻ unguided) | 95% CI | t-test vs 0.5 |
+|---|---|---|---|
+| **literature_comparison** | **0.79** | [0.71, 0.87] | p < 0.001 ✓ |
+| outcome_imagination | 0.65 | [0.54, 0.74] | p = 0.006 ✓ |
+| deduction | 0.62 | [0.52, 0.71] | p = 0.033 ✓ |
+| induction | 0.46 | [0.37, 0.56] | p = 0.468 |
+| proposal_writing | 0.43 | [0.33, 0.53] | p = 0.177 |
+| **small_experiment** | **0.33** | [0.21, 0.44] | p = 0.005 ✗ |
+
+Pairwise judging is more sensitive than absolute scoring: `literature_comparison` is preferred 79% of
+the time even though its *absolute* overall score was flat — a known absolute-vs-comparative judging
+gap. `small_experiment` is reliably *dis-preferred*.
+
+### 4.4 Set-level diversity (mitigating Si's "diversity collapse")
+
+| Condition | Mean pairwise distance ↑ | Near-dup rate (cos≥0.8) ↓ |
+|---|---|---|
+| literature_comparison | **0.456** | **0.091** |
+| small_experiment | 0.424 | 0.094 |
+| unguided | 0.412 | 0.106 |
+| outcome_imagination | 0.407 | 0.096 |
+| deduction | 0.404 | 0.104 |
+| proposal_writing | 0.397 | 0.109 |
+| induction | 0.393 | 0.106 |
+
+Only `literature_comparison` meaningfully increases diversity and lowers duplication — consistent
+with its retrieve-and-differentiate mechanism. → **H4 supported only for literature comparison.**
+
+### 4.5 Judge validation — the "novelty mirage", measured
+
+- **Inter-judge agreement** (Claude vs Gemini novelty): Spearman ρ = **0.41** (p = 8×10⁻¹¹) —
+  moderate and significant; the rubric is reliable enough to interpret.
+- **Convergent validity** (objective LGN vs mean judge novelty): Spearman ρ = **0.012** (p = 0.85) —
+  **essentially zero.** The LLM judge's novelty and literature-distance novelty are *unrelated
+  constructs.* → **H5 refuted; direct empirical support for the novelty mirage.**
+
+**Figures** (in `figures/`): `fig1_lgn.png`, `fig2_judge_rubric.png`, `fig3_tradeoff.png`,
+`fig4_pairwise.png`, `fig5_diversity.png`, `fig6_convergent.png`.
+Raw outputs: `results/model_outputs/ideas.jsonl`, `results/judge_scores.jsonl`,
+`results/pairwise.jsonl`, `results/analysis_summary.json`, `results/per_idea_table.csv`.
+
+---
+
+## 5. Analysis & Discussion
+
+**Why grounding reshapes rather than improves.** A representative case (topic = Factuality, same
+seed): the `small_experiment` scaffold produced **"Chain-of-Verification"** — a *real, already
+published* method — whereas `literature_comparison` and `deduction` produced more elaborated
+"counterfactual chain-of-reasoning / counterfactual retrieval" variants. This illustrates the
+mechanism: asking the model to *predict whether a small test would pass* optimizes for ideas that
+*will* survive scrutiny, i.e. safe, known techniques → lower novelty, higher feasibility. Asking the
+model to *flip an assumption* or *out-distance retrieved papers* optimizes for differentiation →
+higher judged novelty, lower feasibility. Grounding is therefore best understood as a **steering
+knob on the novelty–feasibility axis**, not a uniform quality lever.
+
+**The mirage is the most important result.** Judge novelty rises for deduction/literature
+comparison, yet objective distance-to-prior-work does **not** — and the two measures are
+uncorrelated at the item level (ρ=0.01). The judges reward *rhetorical* novelty (framing, the word
+"counterfactual," elaborate mechanism descriptions) that does not correspond to actually occupying
+unexplored regions of the literature. This is a clean, controlled reproduction of RQ-Bench's
+"novelty mirage" and operationalizes the *All That Glitters* warning: **measure novelty as distance
+to retrieved prior work, not as an LLM's opinion.**
+
+**Relation to prior work.** The survey's directional ranking (graph-grounded 3.83 > Chain-of-Ideas
+3.21 > vanilla 2.44) suggested grounding > unguided on novelty; our judged-novelty results *partly*
+agree (deduction/lit-comparison > unguided) but our objective metric and overall-quality scores do
+**not** — a caution that the survey's gains may themselves be judge-inflated. Our control means
+(judge novelty ≈ 5.5, feasibility ≈ 7.2) sit in a plausible band relative to Si's human AI-condition
+means (novelty ≈ 5.6, feasibility ≈ 6.3).
+
+**Error/■failure modes.** (1) Convergence on a topic-anchored motif ("counterfactual" dominated
+Factuality across conditions) — grounding modulates elaboration around it rather than escaping it.
+(2) `small_experiment` → rediscovery of named existing methods. (3) Absolute rubric compresses
+ideas into 5–6; pairwise reveals preferences the absolute scale hides.
+
+---
+
+## 6. Limitations
+
+1. **Single backbone (gpt-4.1).** Mechanism effects may differ for other model families; we fixed
+   the backbone to isolate grounding, trading external validity for internal validity.
+2. **No item-level human anchor.** The released Si review data is anonymized *without idea text*, so
+   we could not correlate our judge against human scores item-by-item. We validated the judge via
+   inter-judge agreement + convergent validity instead; the absent human anchor is a real gap.
+3. **"Small experiment" is a thought-experiment, not a real run.** Generic scientific ideas cannot
+   be cheaply executed in-loop; we operationalized it as predict-and-critique (as MOOSE/Deep-Ideation
+   do). A domain where ideas *are* cheaply runnable (e.g., a fixed prompting benchmark) could test
+   true experimental grounding.
+4. **LGN is one embedding model's view** of novelty; cosine distance to abstracts is a proxy, not
+   ground truth. It is, however, judge-independent — its disagreement with the judge is informative
+   regardless of its absolute calibration.
+5. **Scale.** N=5/cell (245 ideas) gives medium power; small effects (e.g., outcome_imagination
+   novelty, p=0.09) are suggestive but under-powered. Single-condition scaffolds only — we did not
+   test combinations (most strong systems combine 2–3 mechanisms).
+6. **Topic/contamination.** Topics are public; gpt-4.1 has seen this literature, which may inflate
+   the rediscovery-of-known-methods failure mode.
+
+---
+
+## 7. Conclusions & Next Steps
+
+**Answer to the research question.** *Partially, and conditionally.* Grounding the notion of novelty
+does **not** uniformly produce higher-quality ideas. It **steers** the novelty–feasibility
+trade-off: deduction, literature comparison, and outcome imagination raise *judged* novelty and win
+pairwise against unguided generation (literature comparison most strongly, 79%, and it is also the
+only mechanism that improves idea-set diversity), while small experiments, induction, and proposal
+writing raise feasibility at novelty's expense. Crucially, **none increases objective distance from
+prior work, and LLM-judged novelty is uncorrelated with that objective measure** — so the
+hypothesis's "better novelty" is real in human-style judgment but a *mirage* under a grounded metric.
+
+**Recommendations.**
+- For *judged* novelty + diversity + head-to-head wins: use **literature_comparison** grounding.
+- For *feasibility*: use **induction** or **proposal_writing**; avoid `small_experiment` if novelty
+  matters (it rediscovers known methods).
+- For *evaluation*: never report single-LLM-judge novelty alone; pair it with a literature-distance
+  metric and pairwise comparison — they can disagree completely.
+
+**Follow-ups.** (1) Replicate across backbones (Claude, Gemini, DeepSeek) to test generality. (2)
+Combine mechanisms (e.g., deduction → literature_comparison filtering) to seek novelty *and*
+feasibility together. (3) Build the missing item-level human anchor on fresh, post-cutoff ideas to
+calibrate which metric tracks expert judgment. (4) Test true small-experiment grounding in a
+runnable prompting benchmark where ideas can be executed in-loop.
+
+---
+
+## References (key)
+- Si, Yang, Hashimoto (2024). *Can LLMs Generate Novel Research Ideas?* arXiv:2409.04109 (topics, rubric, human anchor).
+- *On the Limits of LLM-as-Judge for Scientific Novelty* / RQ-Bench (2026). arXiv:2606.12071 (novelty mirage).
+- *All That Glitters Is Not Novel* (2025). arXiv:2502.16487 (novelty as distance to prior work).
+- *Sparks of Science / HypoGen* (2025). arXiv:2504.12976 (Bit→Flip→Spark deduction schema).
+- SciMON (2023, arXiv:2305.14259), MOOSE (2023, arXiv:2309.02726), AutoDiscovery (2025,
+  arXiv:2507.00310), Deep-Ideation (2025, arXiv:2511.02238) — the six grounding mechanisms.
+- Tools: OpenAI `gpt-4.1`; OpenRouter `claude-sonnet-4.5`, `gemini-2.5-flash`; sentence-transformers
+  `all-mpnet-base-v2`; Semantic Scholar Graph API; statsmodels (MixedLM), scipy, scikit-learn.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Planning — Scientific Idea Generation with Grounded Novelty
+
+## Motivation & Novelty Assessment
+
+### Why This Research Matters
+LLM scientific ideation is now good enough that, in a 100+ expert study (Si et al., 2024), AI
+ideas were judged *more novel* than expert humans — yet the field still distrusts LLM ideas,
+because "novelty" is ill-defined and unguided LLMs swing between **incremental** rephrasings and
+**implausible** over-reaches. If a cheap, model-agnostic *grounding scaffold* reliably moves ideas
+toward the novel-and-plausible sweet spot, it directly improves automated discovery pipelines and
+costs nothing to deploy (it is a prompting protocol, not a new model).
+
+### Gap in Existing Work (from `literature_review.md`)
+Every strong system champions **one** grounding mechanism on **its own** dataset and metric:
+SciMON/CoI/Nova (literature comparison), MOOSE/causal-graph (induction), HypoGen (deduction, Bit→
+Flip→Spark), Si-agent/VirSci (proposal writing), AutoDiscovery (outcome imagination / Bayesian
+surprise), Deep-Ideation (critic feedback ≈ small experiments). **No paper compares the six
+mechanisms head-to-head under one controlled protocol** — same backbone, same seed topics, same
+metrics, same output format. The hypothesis is therefore essentially *untested as a controlled
+ablation*. Two evaluation-skeptic papers (All-That-Glitters; RQ-Bench "novelty mirage") add that the
+*evaluation* must itself be grounded — not a single LLM's novelty opinion.
+
+### Our Novel Contribution
+1. **A single controlled ablation** of the user's six grounding mechanisms + an unguided control,
+   with a fixed backbone (gpt-4.1), the canonical 7 Si NLP topics, identical output schema, and N=5
+   replicates/cell (245 ideas).
+2. **Grounded evaluation**: an *objective* literature-grounded novelty metric (embedding distance to
+   real prior-work abstracts retrieved from Semantic Scholar) that needs no LLM opinion, plus a
+   2-judge ensemble (Claude-Sonnet-4.5 + Gemini-2.5-Flash, both off-family from the gpt-4.1 backbone
+   to limit self-preference) cross-checked for inter-judge agreement and **convergent validity**
+   against the objective metric — a direct test of the "novelty mirage."
+3. **Set-level diversity** measurement to test whether grounding fixes Si's diversity-collapse.
+
+### Experiment Justification
+- **E1 — Generation ablation (245 ideas):** the core manipulation. Needed to produce comparable
+  ideas that differ *only* in grounding scaffold.
+- **E2 — Objective literature-grounded novelty + diversity:** bias-free test of "is the idea far
+  from existing work?" and "does grounding broaden the idea set?". Needed because LLM novelty
+  judgments are untrustworthy (RQ-Bench).
+- **E3 — Judge-ensemble rubric (novelty/feasibility/effectiveness/overall) + pairwise win-rate vs
+  the unguided control:** maps onto the human Si rubric so results are comparable to the literature;
+  pairwise (both orderings, 2 judges) gives a position-bias-controlled "grounding > unguided" test.
+- **E4 — Judge validation:** inter-judge agreement + convergent validity (judge novelty vs objective
+  embedding novelty) to decide how much to trust E3. Needed because of the novelty-mirage risk.
+
+---
+
+## Research Question
+Do LLMs generate **higher-quality scientific ideas** (more novel *and* still feasible) when the
+abstract notion of novelty is **grounded** through deduction, induction, proposal writing, outcome
+imagination, small experiments, or literature comparison — versus unguided generation — holding the
+backbone model, seed topic, and output format fixed?
+
+## Hypothesis Decomposition
+- **H1 (objective novelty):** grounded conditions produce ideas with greater embedding distance to
+  retrieved prior work than the unguided control.
+- **H2 (judged quality):** grounded conditions score higher on the 1–10 novelty/overall rubric and
+  win >50% of pairwise comparisons against matched unguided ideas.
+- **H3 (no feasibility collapse):** grounding does not significantly *reduce* feasibility (the Si
+  trade-off) — ideally the literature/induction/small-experiment arms keep or raise it.
+- **H4 (diversity):** grounding increases set-level diversity (mitigates diversity collapse).
+- **H5 (evaluation):** the LLM judge's novelty correlates with the *objective* metric (convergent
+  validity); if not, that supports the novelty-mirage caution and we down-weight E3.
+
+Independent variable = grounding condition (7 levels). Blocking variable = topic (7). Fixed =
+backbone, sampling params, topic seed text, output schema. DV = the E2/E3 metrics above.
+
+## Proposed Methodology
+
+### Approach
+One fully-crossed 7 (condition) × 7 (topic) design, 5 replicates/cell. **Critical control:** every
+condition emits the *same* standardized idea JSON (title, problem, motivation, proposed method,
+experiment plan); only the *reasoning scaffold preceding the idea* differs. This isolates grounding
+from output-format/length confounds (Si's AI-ideas-are-longer confound). Idea length is logged and
+used as a covariate.
+
+### Conditions (scaffolds; identical final output schema)
+1. **unguided** (control) — "propose a novel idea on TOPIC", single shot.
+2. **deduction** — HypoGen Bit→Flip→Spark: state the prevailing assumption (Bit), invert it (Flip),
+   derive the idea (Spark).
+3. **induction** — present 4–6 concrete observations/findings on the topic, induce a general
+   hypothesis, then the idea.
+4. **proposal_writing** — draft a full mini-proposal incl. expected results, then distill the idea.
+5. **outcome_imagination** — imagine the best plausible empirical outcome and the belief it would
+   shift (Bayesian-surprise framing), then back out the idea that would produce it.
+6. **literature_comparison** — retrieve nearest real prior papers (S2), explicitly contrast, and
+   revise the idea until distinct (SciMON-style).
+7. **small_experiment** — propose a tiny falsification test, predict its result, self-critique, and
+   refine the idea using that feedback (MOOSE/Deep-Ideation critic operationalization).
+
+### Backbone / Judges / Embeddings
+- Backbone generator: **gpt-4.1**, temperature 0.8, top_p 1.0, per-idea integer seed.
+- Judges: **anthropic/claude-sonnet-4.5** + **google/gemini-2.5-flash** (off-family → less
+  self-preference), temperature 0.
+- Embeddings: **sentence-transformers all-mpnet-base-v2** on GPU (RTX A6000).
+- Prior-work corpus: ~150 recent abstracts/topic via Semantic Scholar API (S2_API_KEY).
+
+### Baselines
+`unguided` is the pre-registered control. Literature anchors: Si human rubric means
+(AI novelty ≈ 5.6, feasibility ≈ 6.3) for distributional sanity; survey ranking GoAI 3.83 >
+CoI 3.21 > vanilla 2.44 as the directional prior (grounding > unguided).
+
+### Evaluation Metrics & why
+- **Literature-Grounded Novelty (LGN)** = 1 − max cosine sim to nearest prior-work abstract
+  (objective; All-That-Glitters recommendation). Primary.
+- **Rubric 1–10** novelty/feasibility/effectiveness/overall (Si standard; comparable to literature).
+- **Pairwise win-rate vs unguided** (position-controlled, 2 judges) — direct H2 test.
+- **Set-level diversity** = mean pairwise embedding distance within a (condition×topic) cell.
+
+### Statistical Analysis Plan
+- Primary: linear mixed-effects `metric ~ C(condition) + (1|topic)`, unguided = reference; report
+  coefficients, 95% CI, p. Robustness: add idea length as covariate.
+- Pairwise: win-rate vs 0.5, bootstrap 95% CI + binomial test per condition.
+- Effect sizes: Cohen's d vs unguided. Multiple comparisons: Holm across the 6 grounded conditions.
+- Judge: Spearman inter-judge + Spearman(judge novelty, LGN) for convergent validity.
+- Significance level α = 0.05. Seeds fixed (42). All LLM calls cached for exact reproduction.
+
+## Expected Outcomes
+Support: grounded conditions beat unguided on LGN and pairwise win-rate with no feasibility drop;
+literature_comparison & deduction strongest on novelty; induction/small_experiment best on
+feasibility. Refute: no condition separates from unguided, or grounding only inflates LLM-judged
+(not objective) novelty (→ novelty mirage).
+
+## Timeline & Milestones
+Setup/corpus (done/0.5h) → generation harness + pilot 1 topic (0.75h) → full 245-idea generation
+(0.75h) → metrics+judging (1h) → stats+figures (0.75h) → REPORT/README (0.5h). ~20–30% buffer.
+
+## Potential Challenges
+- API rate limits / cost → caching + retry/backoff; gpt-4.1 backbone, cheap judges. Est. cost <$15.
+- Judge bias → off-family ensemble, pairwise both-orderings, convergent-validity check.
+- Length confound → identical schema + length covariate.
+- S2 retrieval gaps → cache corpus; fall back to local paper abstracts if API fails.
+- No item-level human anchor (anonymized data lacks idea text) → validate judge via agreement +
+  convergent validity instead; documented as a limitation.
+
+## Success Criteria
+A reproducible 245-idea controlled ablation with: (1) the objective LGN + diversity results, (2) the
+judge-ensemble rubric + pairwise results with inter-judge agreement, (3) mixed-effects stats with
+effect sizes and corrections, and (4) an honest verdict on H1–H5 — even if negative.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review — Scientific Idea Generation with Grounded Novelty
+
+**Hypothesis under study.** *LLMs generate higher-quality scientific ideas when the notion of
+novelty is **grounded** through one of six mechanisms — deduction, induction, proposal writing,
+outcome imagination, small experiments, or literature comparison — as opposed to unguided
+generation.*
+
+This review synthesizes 18 papers (downloaded to `papers/`, full structured notes in
+`.neurico/paper_notes.json`) gathered via the paper-finder service (3 diligent searches → 150+
+relevance-ranked hits; 49 at relevance 3). It is organized around the six grounding mechanisms
+named in the hypothesis so that the experiment runner can directly map methods → conditions.
+
+---
+
+## 1. Research-Area Overview
+
+LLM-based scientific ideation matured rapidly in 2023–2026. The pivotal empirical result is **Si
+et al. (2024)**: in a controlled study with 100+ NLP researchers, an LLM ideation agent produced
+ideas judged **more novel than human experts** (p<0.05) but slightly **less feasible**, while
+exposing two systemic weaknesses — **unreliable LLM self-evaluation** and **low idea diversity**
+(over-generating thousands of seeds yields only a few hundred unique ideas). Almost every
+subsequent system can be read as an attempt to fix these weaknesses by **grounding** generation in
+some external or structured signal rather than free-form prompting. The two recent surveys
+(arXiv 2504.05496; 2511.07448) converge on the same taxonomy: methods differ mainly in *what they
+ground novelty against* — prior literature, knowledge/concept graphs, learned critics, or actual
+experimental feedback.
+
+A cautionary counter-current matters for this project: **All That Glitters Is Not Novel** (2025)
+shows 24% of "novel" AI research documents are smartly plagiarized and bypass detectors, and **On
+the Limits of LLM-as-Judge** (2026) documents a **"novelty mirage"** — LLM judges rate
+model-generated questions as highly novel while human experts prefer the real reference questions.
+Together these imply that *grounding* is needed not only in **generation** but also in
+**evaluation**, and that automated novelty metrics must be validated against human/literature
+anchors.
+
+---
+
+## 2. Mapping the Literature onto the Six Grounding Mechanisms
+
+| Mechanism (hypothesis) | Representative grounded methods | Core operationalization |
+|---|---|---|
+| **Literature comparison** | SciMON, Chain-of-Ideas, Nova, IdeaBench, Future-Idea (IAScore) | retrieve prior papers; iteratively compare candidate idea to them and revise until "novel enough"; score distance from existing work |
+| **Induction** | MOOSE, psychology causal-graph (2402.14424) | from raw observations/corpus → general hypothesis; refine with feedback |
+| **Deduction** | HypoGen (Bit→Flip→Spark), HypoSpace | derive a counterproposal/prediction from a stated assumption or theory |
+| **Proposal writing** | Si et al. agent, Learning-to-Generate (SFT+RL), VirSci | force ideas into full standardized proposals/experiment plans, scored on novelty+feasibility+effectiveness |
+| **Outcome imagination** | AutoDiscovery (Bayesian surprise), Dynamic-Control reward models | predict expected results / belief-shift before committing; reward surprising-but-plausible ideas |
+| **Small experiments** | AutoDiscovery, MOOSE feedback, Deep-Ideation critic, NovelSeek (referenced) | run cheap experiments / learned reviewer-critic and feed empirical signal back into ideation |
+
+Most strong systems combine 2–3 mechanisms; the **unguided** baseline (vanilla LLM prompting) is
+the consistently weakest condition across every comparison (see §5).
+
+---
+
+## 3. Key Papers
+
+### 3.1 Foundational / evaluation anchors
+
+**Si, Yang, Hashimoto (2024) — Can LLMs Generate Novel Research Ideas?** (arXiv 2409.04109, 371 cit)
+- *Method*: 49 expert writers + 79 reviewers (298 blind reviews), 7 NLP topics (Bias, Coding,
+  Safety, Multilingual, Factuality, Math, Uncertainty). Conditions = Human / AI / AI+human-rerank.
+  Agent = RAG (top-10 papers) → generate **4000 seeds/topic** → dedup at 0.8 cosine → rank via
+  Claude-3.5-Sonnet pairwise Swiss tournament (ranker trained on 1,200 ICLR-2024 submissions) →
+  expand to standardized proposals. Welch t-tests + Bonferroni over 3 designs.
+- *Grounding*: literature_comparison + proposal_writing (no genuine induction/deduction/experiment grounding).
+- *Results*: **Novelty AI 5.64 vs Human 4.84 (p<0.01)**; AI+Rerank 5.81 (p<0.001). Excitement AI 5.19
+  vs 4.55 (p<0.05). **Feasibility AI 6.34 vs 6.61 (n.s., p=1.00)**. Two failure modes: **diversity
+  collapse** — 4000 ideas/topic yield only ~200 unique (**95% duplication**); **unreliable
+  self-eval** — LLM ranker 53.3% consistency vs human 56.1%, and manual human rerank beats the LLM
+  ranker on 32/49 ideas. Confound: AI ideas longer (1186 vs 902 words).
+- *Why central*: the canonical **baseline** and the **gold human-review dataset**
+  (`code/AI-Researcher/reviews_ideation/data_points_all_anonymized.json`). 7-topic prompt set.
+  Novelty/excitement drive overall score (r=0.73 / 0.85); feasibility barely correlates (r=0.10).
+
+**On the Limits of LLM-as-Judge for Scientific Novelty Assessment (2026)** (arXiv 2606.12071)
+- Introduces **RQ-Bench** (author-anchored research questions from recent arXiv). LLM judges show a
+  **novelty mirage**; experts disagree. *Implication*: do **not** rely on a single LLM judge for the
+  novelty metric — anchor to literature/human references and use comparative (pairwise) judging.
+
+**All That Glitters Is Not Novel (2025)** (arXiv 2502.16487)
+- 13 experts find **24%** of AI research docs paraphrased/borrowed; detectors fail. *Implication*:
+  measure novelty as **distance to retrieved prior work**, not just LLM opinion.
+
+### 3.2 Literature-comparison grounding
+
+**SciMON (Wang et al., 2023)** (arXiv 2305.14259, 181 cit) — retrieve "inspirations" → generate →
+**iteratively compare to prior papers and revise until novel enough**. Datasets: ACL Anthology
+(67,408 papers), PubMed biochemical (5,708), gold subset (194). Code+data: `code/SciMON-clbd`.
+The clearest direct implementation of the literature-comparison arm.
+
+**Chain-of-Ideas (Li et al., 2024)** (arXiv 2410.13185, 90 cit) — organize literature into a
+**chain** mirroring a field's progression; ships **Idea Arena** pairwise/Swiss evaluation; ~$0.50/idea.
+Code: `code/CoI-Agent`.
+
+**Nova (2024)** (arXiv 2410.14255) — iterative **planned retrieval** of external knowledge → 3.4×
+more unique novel ideas, 2.5× more top-rated ideas vs SOTA over 170 seed papers (Swiss Tournament).
+
+**Future-Idea-Generation / Kumar et al. (2024)** (arXiv 2409.06185) — source of two cheap automated
+metrics: **IAScore** (alignment to authors' real future-work) and **Idea Distinctness Index**.
+Dataset: S2ORC, 1,250 papers across 5 fields. Code: `code/Future-Idea-Generation`.
+
+**IdeaBench (2024)** (arXiv 2411.02429) — benchmark: 2,374 influential papers + 29,408 references;
+two-stage GPT-4o ranking → **Insight Score** for novelty/feasibility.
+
+### 3.3 Induction grounding
+
+**MOOSE / Yang et al. (2023)** (arXiv 2309.02726, 115 cit) — **hypothetical induction** from raw
+corpus to novel+valid social-science hypotheses; **three feedback mechanisms** (past/present/future).
+Dataset = **TOMATO** (50 recent social-science papers, 7 disciplines) + Reality-Checker eval. Code+data:
+`code/MOOSE` (incl. `Data/*.xlsx`). Directly covers induction **and** small-experiments (feedback).
+
+**Automating Psychological Hypothesis Generation (2024)** (arXiv 2402.14424, 46 cit) — build a
+**causal knowledge graph** from 43,312 psychology articles + LLM; link-prediction → 130 hypotheses.
+LLM+graph matches experts on novelty and **beats LLM-only** (t(59)=4.32, p<0.001). Grounding the LLM
+in an inductive causal structure outperforms unguided LLM — a clean confirmation of the hypothesis.
+
+### 3.4 Deduction grounding
+
+**Sparks of Science / HypoGen (2025)** (arXiv 2504.12976) — **HypoGen** dataset (~5,478 train / 50
+test) with **Bit→Flip→Spark** schema + explicit **Chain-of-Reasoning**. Fine-tuning on the
+deductive Bit→Flip structure improves novelty, feasibility, overall quality. Downloaded to
+`datasets/hypogen`. The best fit for the deduction arm.
+
+**HypoSpace (2025)** (arXiv 2510.15614) — evaluates LLMs as **set-valued** hypothesis generators
+under underdetermination; metrics **Validity Rate** and **Uniqueness/Novelty Rate** over controlled
+tasks (causal inference from perturbations; 3D voxel reconstruction). Code: `github.com/CTT-Pavilion/_HypoSpace`.
+
+### 3.5 Proposal-writing & learned-control grounding
+
+**Learning to Generate Research Idea with Dynamic Control (2024)** (arXiv 2412.14626) — **SFT + RL**
+with multi-dimensional reward models (novelty/feasibility/effectiveness) and inference-time
+dimensional controllers. Data: ICLR 2023-24 (1,000 SFT), NeurIPS 2023-24 (3,271 RL). Defines the
+standard 0–10 rubric used widely (feasibility = practical in 1–2 months, limited GPU, API access).
+
+**VirSci / Many Heads (2024)** (arXiv 2410.09403) — **multi-agent** team generate→evaluate→refine;
+outperforms SOTA on novelty. Code: `code/Virtual-Scientists`.
+
+### 3.6 Outcome-imagination & small-experiments grounding
+
+**AutoDiscovery (2025)** (arXiv 2507.00310) — open-ended discovery driven by **Bayesian surprise**
+(epistemic shift prior→posterior **after running experiments**), MCTS w/ progressive widening,
+surprisal reward. Metrics: Surprisal Count, Search Efficiency. Data: DiscoveryBench tasks.
+Code: `code/AutoDiscovery` (+ `allenai/discoverybench`). The clearest outcome-imagination +
+small-experiments implementation.
+
+**Deep-Ideation (2025)** (arXiv 2511.02238) — explore-expand-evolve over a **scientific concept
+network** with a **critic engine trained on real reviewer feedback**; +10.67% idea quality.
+Code: `code/Deep-Ideation`.
+
+### 3.7 Surveys
+
+**A Survey on Hypothesis Generation … (2025)** (arXiv 2504.05496) and **LLMs for Scientific Idea
+Generation: A Creativity-Centered Survey (2025)** (arXiv 2511.07448). The latter organizes methods
+into 5 families (external-knowledge augmentation, prompt-based distributional steering,
+inference-time scaling, multi-agent collaboration, parameter-level adaptation) and reports a useful
+relative ranking: **GoAI (graph-grounded) novelty 3.83 > Chain-of-Ideas 3.21 > vanilla prompting
+2.44** — i.e., grounding > unguided on novelty, the headline trend supporting the hypothesis.
+
+---
+
+## 4. Common Methodologies, Baselines, Metrics, Datasets
+
+### 4.1 Common methodologies
+- **RAG / retrieval grounding** (literature comparison): SciMON, CoI, Nova, Si et al., IdeaBench.
+- **Knowledge / concept graphs** (induction/deduction): psychology causal graph, Deep-Ideation, SciMON-KG.
+- **Iterative refine-against-prior-work loops**: SciMON (novelty until threshold), MOOSE (feedback), Deep-Ideation (critic).
+- **Search over idea space**: MCTS (AutoDiscovery), Swiss-tournament ranking (Si, Nova, CoI Idea Arena).
+- **Learned control**: SFT+RL reward models (Dynamic Control), reviewer-trained critics (Deep-Ideation).
+
+### 4.2 Standard baselines (use these)
+1. **Vanilla / unguided LLM prompting** — the control condition of the hypothesis (weakest everywhere).
+2. **RAG-only ideation agent (Si et al.)** — literature-grounded but no iterative novelty optimization; the strongest *simple* baseline and the reference agent.
+3. **Chain-of-Ideas** and **SciMON** — grounded baselines with released code.
+
+### 4.3 Evaluation metrics (recommended stack)
+- **Human-style rubric, 1–10**: Novelty, Feasibility, (Expected) Effectiveness, Excitement, Overall — the Si et al. / Dynamic-Control standard.
+- **Reference-based novelty (literature-grounded)**: IAScore (alignment to real future work), Idea Distinctness Index, IdeaBench Insight Score, embedding distance to nearest retrieved paper.
+- **Set-level**: Validity Rate + Uniqueness/Novelty Rate (HypoSpace); diversity/dedup counts (Si et al. diversity failure).
+- **Comparative judging, not standalone** (RQ-Bench finding): use pairwise/Swiss tournaments and **validate the LLM judge against the Si et al. human scores** before trusting it.
+
+### 4.4 Datasets in the literature (see `datasets/README.md`)
+- **HypoGen** (HF, downloaded) — Bit-Flip-Spark; deduction arm.
+- **Si et al. ideas+reviews** (in `code/AI-Researcher`) — gold human novelty/feasibility anchor.
+- **MOOSE/TOMATO** (in `code/MOOSE/Data`) — open-domain induction.
+- **SciMON/CLBD** (in `code/SciMON-clbd/data`) — literature-based discovery.
+- **IdeaBench / S2ORC / DiscoveryBench / RQ-Bench** — referenced, fetch if needed.
+
+---
+
+## 5. Gaps and Opportunities (directly relevant to the hypothesis)
+
+1. **No head-to-head comparison of the six grounding mechanisms under one protocol.** Existing
+   papers each champion one mechanism with its own dataset/metric. The hypothesis is essentially
+   untested as a *controlled ablation*: same backbone LLM, same seed topics, same metrics, six
+   grounding conditions + an unguided control. **This is the clearest experimental contribution.**
+2. **Self-evaluation is unreliable** (Si et al.) and **LLM-judge novelty is a mirage** (RQ-Bench) —
+   so grounding the *evaluation* (literature distance, human-anchored comparative judging) is as
+   important as grounding *generation*.
+3. **Diversity collapse** (Si et al.): test whether grounding improves *set-level* novelty/coverage,
+   not just single-idea scores (use HypoSpace metrics).
+4. **Plagiarism risk** (All That Glitters): literature-comparison grounding should be evaluated for
+   *reducing* inadvertent copying, an underexplored benefit.
+
+---
+
+## 6. Recommendations for Our Experiment
+
+- **Design**: one controlled study — fixed backbone (e.g., GPT-4o / Claude / DeepSeek per
+  Si/Dynamic-Control conventions), fixed seed topics (reuse Si et al.'s 7 NLP topics and/or HypoGen
+  Bits), and **seven conditions**: `unguided` (control) + one per grounding mechanism
+  (deduction=Bit→Flip; induction=corpus→hypothesis w/ feedback; literature_comparison=SciMON-style
+  retrieve-and-revise; proposal_writing=full standardized proposal; outcome_imagination=predict
+  results / Bayesian-surprise rerank; small_experiments=cheap empirical/critic feedback).
+- **Datasets**: **HypoGen** (deduction; ready in `datasets/hypogen`), **MOOSE/TOMATO** (induction),
+  **Si et al. ideas** (anchor + topics), **SciMON/CLBD** (literature comparison). All already local.
+- **Baselines**: vanilla prompting (control), Si et al. RAG agent, Chain-of-Ideas, SciMON.
+- **Metrics**: 1–10 novelty/feasibility/effectiveness rubric **+** a literature-grounded reference
+  metric (IAScore / embedding distance / Insight Score) **+** set-level diversity (HypoSpace).
+  Use **comparative** LLM judging validated against the Si et al. human scores; report agreement.
+- **Methodological cautions**: avoid single-shot LLM self-judging of novelty; dedup before counting
+  unique ideas; check generated ideas against retrieved prior work for plagiarism.
+- **Reusable code**: SciMON (`code/SciMON-clbd`), MOOSE (`code/MOOSE`), AI-Researcher agent
+  (`code/AI-Researcher`), Future-Idea metrics (`code/Future-Idea-Generation`), AutoDiscovery
+  (`code/AutoDiscovery`). Read prompts/metrics directly; do **not** co-install their conflicting deps.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. AUTHOR
+   - Use this exact author line in the \author{} block: Chenhao Tan and NeuriCo
+
+3. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+4. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+5. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+6. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+7. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+8. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+9. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+10. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   \author{Chenhao Tan and NeuriCo}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Command templates are pre-copied to paper_draft/commands/:
+   - math.tex: Math notation macros
+   - general.tex: Formatting macros
+   - macros.tex: Project-specific term definitions (customize this for your paper)
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read .claude/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

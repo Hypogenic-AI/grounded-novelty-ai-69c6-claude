@@ -1,0 +1,112 @@
+[
+  {
+    "paper_id": "3kitbpEZZO",
+    "title": "Beyond probability partitions: Calibrating neural networks with semantic aware grouping",
+    "authors": [
+      "Jia-Qi Yang",
+      "De-Chuan Zhan",
+      "Le Gan"
+    ],
+    "venue": "NeurIPS",
+    "year": "2023",
+    "citation": "Yang et al., 2023",
+    "abstract": "Research has shown that deep networks tend to be overly optimistic about their predictions, leading to an underestimation of prediction errors. Due to the limited nature of data, existing studies have proposed various methods based on model prediction probabilities to bin the data and evaluate calibration error. We propose a more generalized definition of calibration error called Partitioned Calibration Error (PCE), revealing that the key difference among these calibration error metrics lies in how the data space is partitioned. We put forth an intuitive proposition that an accurate model should be calibrated across any partition, suggesting that the input space partitioning can extend beyond just the partitioning of prediction probabilities, and include partitions directly related to the input. Through semantic-related partitioning functions, we demonstrate that the relationship between model accuracy and calibration lies in the granularity of the partitioning function. This highlights the importance of partitioning criteria for training a calibrated and accurate model. To validate the aforementioned analysis, we propose a method that involves jointly learning a semantic aware grouping function based on deep model features and logits to partition the data space into subsets. Subsequently, a separate calibration function is learned for each subset. Experimental results demonstrate that our approach achieves significant performance improvements across multiple datasets and network architectures, thus highlighting the importance of the partitioning function for calibration.",
+    "bit": "Conventional calibration methods group data solely based on prediction probabilities, evaluating calibration error through these probability-based bins. However, this approach overlooks the broader data structure, limiting its ability to fully capture the ways in which models might miscalibrate across diverse subsets of the input space.",
+    "flip": "A generalized definition of calibration error was introduced that partitions the data beyond just probability-based bins, incorporating semantic or feature-based groupings. By learning both a semantic grouping function and separate calibration functions for each subset, the model adapts to different data segments and achieves improved calibration and accuracy.",
+    "spark": "Semantic partitioning for better calibration",
+    "chain_of_reasoning": "I began by investigating how overconfidence in deep networks can lead to underestimation of errors and realized that focusing on probability-based bins alone obscures critical patterns. One key question was: could input-based structure reveal hidden miscalibration that probability bins overlook? I tested whether subsets defined by semantic patterns derived from learned features differed in their miscalibration profiles, and the experimental results indicated sharper distinctions than traditional bins. Then I asked: how do I construct a flexible partitioning function that learns meaningful groupings while calibrating each subset? I addressed this by training a feature-level grouping function alongside a separately optimized calibration step for each partition, which provided finer adaptation. Observing the substantial gain in calibration accuracy across diverse datasets, I recognized a pivotal realization that tailoring calibration to semantic subsets was essential. To validate these findings, I added cross-validation checks that compared group-specific calibration error and examined subset stability under multiple architectures. Another question arose: how can I mitigate data scarcity in certain semantic partitions while preserving statistical efficacy? I controlled for minimal sample sizes by balancing subsets and using augmentation to bolster representation. Consequently, this approach reconciled the gap in calibration uncovered by conventional binning and solidified the methodological advantage of partitioning guided by semantic or feature-level insights.",
+    "url": "https://openreview.net/forum?id=3kitbpEZZO",
+    "pdf_url": "https://openreview.net/pdf?id=3kitbpEZZO"
+  },
+  {
+    "paper_id": "Enzew8XujO",
+    "title": "Transfer learning for atomistic simulations using GNNs and kernel mean embeddings",
+    "authors": [
+      "John Isak Texas Falk",
+      "Luigi Bonati",
+      "Pietro Novelli",
+      "Michele Parrinello",
+      "massimiliano pontil"
+    ],
+    "venue": "NeurIPS",
+    "year": "2023",
+    "citation": "Falk et al., 2023",
+    "abstract": "Interatomic potentials learned using machine learning methods have been successfully applied to atomistic simulations. \nHowever, accurate models require large training datasets, while generating reference calculations is computationally demanding. To bypass this difficulty, we propose a transfer learning algorithm that leverages the ability of graph neural networks (GNNs) to represent chemical environments together with kernel mean embeddings. We extract a feature map from GNNs pre-trained on the OC20 dataset and use it to learn the potential energy surface from system-specific datasets of catalytic processes. Our method is further enhanced by incorporating into the kernel the chemical species information, resulting in improved performance and interpretability. We test our approach on a series of realistic datasets of increasing complexity, showing excellent generalization and transferability performance, and improving on methods that rely on GNNs or ridge regression alone, as well as similar fine-tuning approaches.",
+    "bit": "Machine learning-based interatomic potentials have found success in atomistic simulations but demand extensive training data. Generating reference calculations on a sufficiently large scale remains prohibitively expensive for many practical applications.",
+    "flip": "A transfer learning technique uses graph neural networks pre-trained on large-scale data to extract feature maps, combined with kernel mean embeddings. By embedding the chemical species information within the kernel, this method improves performance and interpretability on system-specific datasets for catalytic processes.",
+    "spark": "Transfer learning with GNN-based kernel",
+    "chain_of_reasoning": "I noticed that obtaining extensive reference calculations in this domain was infeasible, so I asked: how might I dramatically reduce data requirements without compromising predictive power? I realized that a pre-trained graph neural network on a massive dataset could provide a succinct representation of chemical environments. I probed the idea of extracting intermediate features from this network and wondered whether a kernel embedding strategy could synergize with these features. I tested this approach on various catalytic datasets, assessing how well the embedded chemical information contributed to accurate energy predictions. I found marked improvements over simple regression baselines, so I asked: does including explicit species information in the kernel further refine interpretability? Indeed, it allowed me to identify which elements were driving subtle differences in system-specific potentials. I reflected on whether my training routine required refinement, so I validated different regularization settings to confirm consistent performance gains. A pivotal insight came when I compared my method\u2019s transferability across diverse catalytic pathways, revealing enhanced generalization without replicating costly computations from scratch. Now I am exploring additional strategies for scaling up the kernel embeddings, seeking conclusive evidence that they yield stable improvements on more complex reaction networks.",
+    "url": "https://openreview.net/forum?id=Enzew8XujO",
+    "pdf_url": "https://openreview.net/pdf?id=Enzew8XujO"
+  },
+  {
+    "paper_id": "0QAzIMq32X",
+    "title": "Inner Classifier-Free Guidance and Its Taylor Expansion for Diffusion Models",
+    "authors": [
+      "Shikun Sun",
+      "Longhui Wei",
+      "Zhicai Wang",
+      "Zixuan Wang",
+      "Junliang Xing",
+      "Jia Jia",
+      "Qi Tian"
+    ],
+    "venue": "ICLR",
+    "year": "2024",
+    "citation": "Sun et al., 2024",
+    "abstract": "Classifier-free guidance (CFG) is a pivotal technique for balancing the diversity and fidelity of samples in conditional diffusion models. This approach involves utilizing a single model to jointly optimize the conditional score predictor and unconditional score predictor, eliminating the need for additional classifiers. It delivers impressive results and can be employed for continuous and discrete condition representations. However, when the condition is continuous, it prompts the question of whether the trade-off can be further enhanced. Our proposed inner classifier-free guidance (ICFG) provides an alternative perspective on the CFG method when the condition has a specific structure, demonstrating that CFG represents a first-order case of ICFG. Additionally, we offer a second-order implementation, highlighting that even without altering the training policy, our second-order approach can introduce new valuable information and achieve an improved balance between fidelity and diversity for Stable Diffusion.",
+    "bit": "Classifier-free guidance uses a single model to simultaneously learn conditional and unconditional score predictions, removing the need for separate classifiers. However, for continuous conditions, this technique can face limitations in fully optimizing the balance between diversity and fidelity.",
+    "flip": "An alternative approach was introduced, termed inner classifier-free guidance (ICFG), which views the original method as a first-order instance within a broader framework. By adding a second-order implementation without changing the training policy, this technique injects new information and refines the balance between fidelity and diversity in diffusion models.",
+    "spark": "Second-order diffusion guidance breakthrough",
+    "chain_of_reasoning": "I began by questioning whether one model could jointly learn unconditional and conditional score predictions for continuous conditions without compromising fidelity and diversity. I examined the existing technique\u2019s ability to prevent mode collapse and still produce convincing samples, testing systematically on complex image domains. Intrigued by the notion of a broader framework, I investigated a second-order implementation that builds on the original idea without retraining the model. To assess its effectiveness, I compared conditional sample quality and diversity metrics under both first-order and second-order regimes. I noticed that the second-order method supplied additional corrections to the trained model, enhancing realism without suppressing variation. I asked myself whether these second-order terms might increase computational cost, but experiments revealed moderate overhead. Observing that the newly introduced terms injected valuable structural information, I documented more balanced results for Stable Diffusion. I wondered if this balance would hold under varied parameter settings, so I performed targeted parameter sweeps, confirming minimal loss in either fidelity or diversity. Reflecting on these findings, I realized that treating the original approach as strictly first-order helped reveal the path toward a more refined second-order solution. Finally, to confirm the consistency of this improvement, I plan further tests on different tasks to fully validate the broader utility of this second-order guidance.",
+    "url": "https://openreview.net/forum?id=0QAzIMq32X",
+    "pdf_url": "https://openreview.net/pdf?id=0QAzIMq32X"
+  },
+  {
+    "paper_id": "mM7VurbA4r",
+    "title": "SOTOPIA: Interactive Evaluation for Social Intelligence in Language Agents",
+    "authors": [
+      "Xuhui Zhou",
+      "Hao Zhu",
+      "Leena Mathur",
+      "Ruohong Zhang",
+      "Haofei Yu",
+      "Zhengyang Qi",
+      "Louis-Philippe Morency",
+      "Yonatan Bisk",
+      "Daniel Fried",
+      "Graham Neubig",
+      "Maarten Sap"
+    ],
+    "venue": "ICLR",
+    "year": "2024",
+    "citation": "Zhou et al., 2024",
+    "abstract": "*Humans are social beings*; we pursue social goals in our daily interactions, which is a crucial aspect of social intelligence. Yet, AI systems' abilities in this realm remain elusive. We present SOTOPIA, an open-ended environment to simulate complex social interactions between artificial agents and evaluate their social intelligence. In our environment, agents role-play and *interact* under a wide variety of scenarios; they coordinate, collaborate, exchange, and compete with each other to achieve complex social goals. We simulate the role-play interaction between LLM-based agents and humans within this task space and evaluate their performance with a holistic evaluation framework called SOTOPIA-Eval. With SOTOPIA, we find significant differences between these models in terms of their social intelligence, and we identify a subset of SOTOPIA scenarios, SOTOPIA-hard, that is generally challenging for all models. We find that on this subset, GPT-4 achieves a significantly lower goal completion rate than humans and struggles to exhibit social commonsense reasoning and strategic communication skills. These findings demonstrate SOTOPIA's promise as a general platform for research on evaluating and improving social intelligence in artificial agents.",
+    "bit": "Most AI evaluations of social intelligence are limited to constrained or narrowly focused tasks, making it difficult to capture the complexity of real-world social interactions. Such approaches often fail to account for the multifaceted choices, negotiations, and adaptations that occur in human social contexts.",
+    "flip": "An open-ended environment was introduced to simulate multi-agent interactions where collaborators, competitors, and mixed relationships can all be explored. This setup employs role-playing and diverse scenarios to more thoroughly evaluate and improve social intelligence in artificial agents.",
+    "spark": "Open-ended environment for social intelligence",
+    "chain_of_reasoning": "I begin by questioning how AI systems might capture nuanced social dynamics instead of performing limited tasks under narrow constraints. I resolve to build an open-ended environment that allows agents to role-play and negotiate goals under complex social challenges, prompting me to design diverse scenarios that include collaboration, competition, and mixed motives. I then integrate various role-play scripts and iterative scenario expansions to simulate goal-oriented exchanges, ensuring the environment can track social reasoning and strategic negotiation. I carefully evaluate model performance using a holistic framework that inspects goal completion and deeper social comprehension, noting that some setups are intrinsically more challenging. I ask myself whether these scenarios, designated as particularly difficult, might reveal systematic shortcomings in current AI systems, so I compare GPT-4 with human participants. I detect a conspicuous pattern of lower goal achievement for GPT-4 in these challenging cases, leading me to refine the environment\u2019s scenario design to ensure clarity of tasks and systematic data collection. I wonder if more robust planning mechanisms or additional social reasoning modules could alleviate the model\u2019s struggle with strategic communication, so I plan further controlled experiments with consistent metrics for goal alignment and common-sense responses. I also develop additional data validation procedures, such as double-blind role-play trials, to confirm that models\u2019 social performance is accurately measured. Finally, I realize that the framework of SOTOPIA provides a broad testing ground for exposing AI limitations, motivating me to continue improving these multi-agent interactions toward more realistic social intelligence.",
+    "url": "https://openreview.net/forum?id=mM7VurbA4r",
+    "pdf_url": "https://openreview.net/pdf?id=mM7VurbA4r"
+  },
+  {
+    "paper_id": "vwr4bHHsRT",
+    "title": "Optimal Regret Is Achievable with Bounded Approximate Inference Error: An Enhanced Bayesian Upper Confidence Bound Framework",
+    "authors": [
+      "Ziyi Huang",
+      "Henry Lam",
+      "Amirhossein Meisami",
+      "Haofeng Zhang"
+    ],
+    "venue": "NeurIPS",
+    "year": "2023",
+    "citation": "Huang et al., 2023",
+    "abstract": "Bayesian bandit algorithms with approximate Bayesian inference have been widely used in real-world applications. However, there is a large discrepancy between the superior practical performance of these approaches and their theoretical justification. Previous research only indicates a negative theoretical result: Thompson sampling could have a worst-case linear regret $\\Omega(T)$ with a constant threshold on the inference error measured by one $\\alpha$-divergence. To bridge this gap, we propose an Enhanced Bayesian Upper Confidence Bound (EBUCB) framework that can efficiently accommodate bandit problems in the presence of approximate inference. Our theoretical analysis demonstrates that for Bernoulli multi-armed bandits, EBUCB can achieve the optimal regret order $O(\\log T)$ if the inference error measured by two different $\\alpha$-divergences is less than a constant, regardless of how large this constant is. To our best knowledge, our study provides the first theoretical regret bound that is better than $o(T)$ in the setting of constant approximate inference error. Furthermore, in concordance with the negative results in previous studies, we show that only one bounded $\\alpha$-divergence is insufficient to guarantee a sub-linear regret.",
+    "bit": "Bayesian bandit algorithms with approximate inference are widely employed due to their strong empirical performance. However, theory has so far pointed to a worst-case linear regret when only one \u03b1-divergence error is controlled, indicating that these methods can fail if the inference error surpasses a constant threshold.",
+    "flip": "An enhanced Bayesian upper confidence bound framework is presented, leveraging two \u03b1-divergences to keep approximation error in check. This method guarantees sub-linear (logarithmic) regret for Bernoulli bandits whenever the error remains within a constant, bridging the gap between the observed practical success and theoretical guarantees.",
+    "spark": "Two-divergence bound for sub-linear regret",
+    "chain_of_reasoning": "I initially asked: how could a single-divergence criterion fail to avert linear regret in approximate Bayesian bandit settings. Observing real-time regret growth in simulations, I recognized that a second divergence might detect additional posterior discrepancies. Could bounding two divergence measures lead to sub-linear regret for Bernoulli bandits? To test this hypothesis, I designed EBUCB with dual \u03b1-divergence constraints, validated it experimentally, and observed log-scale regret when both errors stayed below a constant. Why does dual bounding help? It controls approximate inference from multiple perspectives, preventing serious estimation drift in the posterior. I further asked whether this result holds under real data conditions, so I varied reward distributions and repeated trials across multiple seeds, consistently verifying sub-linear performance. To ensure reliable inference, I performed further model diagnostics, confirming that a modest threshold on both divergences was sufficient for robust regret bounds. I realized that this dual perspective bridged the previously puzzling gap between empirical success and prior negative theory. Next, I plan to refine the experimental design by exploring more complex bandit structures and advanced sampling strategies for more comprehensive validation.",
+    "url": "https://openreview.net/forum?id=vwr4bHHsRT",
+    "pdf_url": "https://openreview.net/pdf?id=vwr4bHHsRT"
+  }
+]

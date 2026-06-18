@@ -1,0 +1,9 @@
+Resource finding phase completed successfully.
+Timestamp: 2026-06-18T18:36:31+00:00
+Topic: Scientific Idea Generation with Grounded Novelty
+Papers downloaded: 18 (PDFs in papers/, manifest papers/_arxiv_manifest.json)
+Datasets ready: 4 local (HypoGen downloaded; MOOSE, SciMON, Si-et-al bundled in code/) + referenced (IdeaBench, DiscoveryBench, RQ-Bench)
+Repositories cloned: 8 (code/: AI-Researcher, SciMON-clbd, MOOSE, CoI-Agent, Virtual-Scientists, AutoDiscovery, Future-Idea-Generation, Deep-Ideation)
+Deliverables: literature_review.md, resources.md, papers/README.md, datasets/README.md, code/README.md
+Structured per-paper notes: .neurico/paper_notes.json (18 papers)
+Environment: isolated uv venv (.venv) with pyproject.toml; deps incl. pypdf, requests, arxiv, httpx, datasets, huggingface_hub

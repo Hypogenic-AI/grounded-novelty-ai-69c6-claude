@@ -1,0 +1,689 @@
+[
+  {
+    "arxiv": "2410.14255v2",
+    "one_liner": "Nova uses iterative planning and search to retrieve external knowledge strategically during LLM-based idea generation, achieving 3.4x more unique novel ideas and 2.5x more top-rated ideas than state-of-the-art baselines across 170 seed papers.",
+    "problem": "Existing LLMs generate simplistic and repetitive research ideas due to their limited ability to acquire and leverage external knowledge for innovation. The challenge is enhancing LLM-based ideation systems to produce more novel and diverse ideas that match expert expectations for scientific research directions.",
+    "method": "Nova employs an iterative planning and search methodology that strategically retrieves external knowledge at each generation step. The framework progressively enriches idea generation by planning what knowledge to retrieve, retrieving it, incorporating it into the context, and iteratively repeating this cycle to generate increasingly novel and diverse ideas grounded in broader and deeper scientific literature insights.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "outcome_imagination",
+      "small_experiments"
+    ],
+    "grounding_notes": "Nova grounds novelty through literature comparison by iteratively retrieving and comparing generated ideas against existing papers to ensure novelty; outcome imagination through predicting which knowledge retrieval would lead to novel ideas (the planning component); and small experiments via iterative feedback loops where each iteration refines ideas based on retrieval results. The retrieval-augmented generation (RAG) strategy ensures ideas are anchored to real scientific literature, while the iterative refinement embodies an empirical feedback mechanism similar to small experimental iterations.",
+    "datasets": [
+      "170 seed papers (Swiss Tournament evaluation setup)",
+      "Automated novelty/diversity evaluation metrics",
+      "Human expert assessments"
+    ],
+    "baselines": [
+      "Baseline LLMs without external knowledge retrieval",
+      "Previous state-of-the-art methods for LLM-based idea generation",
+      "Models without iterative planning component"
+    ],
+    "metrics": [
+      "Number of unique novel ideas (3.4x improvement)",
+      "Top-rated ideas count (2.5x improvement over SOTA)",
+      "Swiss Tournament evaluation (head-to-head ranking across 170 seed papers)",
+      "Novelty scores",
+      "Diversity scores",
+      "Human expert assessments of idea quality"
+    ],
+    "key_results": "The framework produces 3.4 times more unique novel ideas compared to baseline LLM generation without external knowledge acquisition. On a Swiss Tournament evaluation across 170 seed papers, Nova generates at least 2.5 times more top-rated ideas than current state-of-the-art methods. Both automated and human evaluations confirm substantial improvements in novelty and diversity of generated research ideas. The iterative retrieval strategy effectively combats the tendency of baseline LLMs to produce simplistic and repetitive suggestions.",
+    "code_links": [],
+    "relevance_to_hypothesis": "Nova provides strong evidence supporting the hypothesis that grounding LLM-based idea generation through external knowledge (literature comparison and iterative retrieval) significantly improves novelty and quality. The paper demonstrates that combining outcome imagination (planning what to retrieve) with literature comparison (iterative retrieval and evaluation against existing work) and small experimental feedback loops produces quantifiably better scientific ideas. This directly validates that guided, knowledge-grounded approaches substantially outperform unguided LLM generation.",
+    "limitations": "The paper does not explicitly detail limitations, but potential constraints include: (1) computational cost of iterative retrieval rounds may scale poorly; (2) evaluation limited to 170 seed papers in Swiss Tournament format; (3) reliance on existing literature means it may struggle with entirely novel research directions not yet covered in literature; (4) quality of ideas still depends on LLM capabilities and retrieval system effectiveness; (5) no discussion of domain-specificity or applicability across different scientific fields."
+  },
+  {
+    "arxiv": "2305.14259v7",
+    "one_liner": "SciMON generates novel scientific ideas grounded in literature by retrieving inspirations from past papers and iteratively comparing generated ideas to prior work using novelty-boosting optimization.",
+    "problem": "LLMs struggle to generate novel scientific hypotheses grounded in literature. Previous literature-based discovery work was limited to binary link prediction (drug-disease pairs) with no explicit novelty optimization. There is a need to generate rich, contextual, natural language scientific ideas that go beyond pairwise concept linking while explicitly optimizing for novelty relative to existing work.",
+    "method": "SCIMON uses a three-module pipeline: (1) Inspiration Retrieval: Retrieves related problems and solutions via semantic similarity (SentenceBERT), knowledge graphs (tasks/methods/materials), and citation networks. (2) Generation: Uses in-context learning with GPT-3.5/GPT-4 or fine-tuned T5-large, with an in-context contrastive loss that treats background text phrases as negative examples to discourage copying. (3) Iterative Novelty Boosting: Iteratively compares generated ideas (It) against training corpus using cosine similarity (k=20 nearest neighbors, threshold \u00b5=0.6); if similarity exceeds threshold, provides retrieved similar ideas as negative examples to the LLM with prompt \"Your idea has similarities with existing research... Make sure the idea you suggest is significantly different,\" then regenerates until all similarities fall below threshold.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "induction",
+      "small_experiments"
+    ],
+    "grounding_notes": "Literature Comparison (primary): The iterative novelty boosting mechanism explicitly retrieves and compares generated ideas to prior papers in a reference corpus, operationalizing novelty as distance from existing work. The retrieval of semantic neighbors, KG neighbors, and citation neighbors grounds idea generation in observed prior solutions. Induction: Human annotators evaluate ideas by observing quality patterns across outputs (Study I, II, III). Small Experiments: The paper conducts multiple human evaluation studies (4 studies) on different facets of the approach, with annotators rating novelty, technical depth, and utility on specific instances to inform method improvements.",
+    "datasets": [
+      "ACL Anthology (67,408 papers from 1952\u20132022)",
+      "PubMed biochemical corpus (5,708 papers from 1988\u20132024)",
+      "Gold test subset: 194 manually-curated instances from ACL Anthology 2022 papers (low background-target similarity \u2264 0.074)",
+      "Training corpus D: 114,310 training instances (forward/backward [method used-for task] relations)",
+      "Validation: 16,195 instances",
+      "Test: 5,309 instances from ACL papers"
+    ],
+    "baselines": [
+      "GPT-3.5 davinci-003 zero-shot (GPT3.5ZS)",
+      "GPT-3.5 few-shot random (GPT3.5FS)",
+      "GPT-3.5 retrieval-based few-shot (GPT3.5Retr)",
+      "GPT-3.5 with citation neighbors (GPT3.5FS+CT)",
+      "GPT-3.5 with KG neighbors (GPT3.5FS+KG)",
+      "GPT-4 gpt-4-0314 few-shot (GPT4FS)",
+      "GPT-4 with KG neighbors (GPT4FS+KG)",
+      "T5-large baseline (T5)",
+      "T5 with semantic neighbors + contrastive loss (T5+SN+CL)",
+      "Meditron-7b (biomedical LLM) for domain generalization study"
+    ],
+    "metrics": [
+      "Human evaluation: Helpfulness (binary: relevant + novel + reasonable + clear)",
+      "Technical depth and novelty ranking (Study II)",
+      "Relative novelty improvement via iteration (Study III): % of 1st iteration ideas gaining novelty over initial (SN: 55.6%), % gaining novelty from 1st to 2nd iteration (SN: 57.8%)",
+      "New terms added (average after filtering: SN +23.1%, +21.5% across iterations)",
+      "Difference percentage (% ideas substantially different from original)",
+      "ROUGE-L and BERTScore (automatic metrics, secondary)",
+      "Agreement scores (Study I: 43.8\u201375%, Study III: 87.5\u201393.3%)"
+    ],
+    "key_results": "GPT-4FS and GPT-4FS+KG significantly outperform other models in human evaluation (73% helpful for GPT4FS, 66% for GPT4FS+KG in Study I). T5+SN+CL ranks best among fine-tuned models (48% helpful). Iterative novelty boosting improves novelty: 88.9% of 1st iteration ideas are substantially different from initial ideas, with 55.6% gaining novelty; 2nd iteration improves further (57.8% gain). However, in 85% of comparisons, ground truth scientific ideas are rated as having significantly higher technical level and novelty than system outputs (15% ambiguous/lacking context). Biomedical domain generalization (Meditron-7b): 80% of outputs rated positively by domain experts. Models tend to generate superficial concept combinations rather than deep insights; novelty boosting adds terms like 'dynamic/adaptive modeling', 'graph models', 'multimodal fusion' but often lacks technical depth.",
+    "code_links": [
+      "https://github.com/eaglew/clbd (official repository with code, data, and resources)"
+    ],
+    "relevance_to_hypothesis": "Strongly relevant and supporting. The paper directly demonstrates that explicit grounding mechanisms improve LLM-generated idea quality. Specifically: (1) Literature comparison via iterative retrieval and novelty-checking provides structured feedback that improves novelty (55.6% first-iteration gain, 57.8% second-iteration gain in Study III). (2) The framework uses prior scientific papers and their [problem, solution] pairs as concrete ground truth for comparison. (3) Multi-round iterative refinement based on comparing to prior work acts as a form of empirical feedback loop (small_experiments aspect via human evaluation). The results show GPT-4FS+KG outperforms ungrounded baselines, supporting the hypothesis that grounding novelty search in literature comparison boosts quality compared to plain generation.",
+    "limitations": "Evaluation limited to AI/NLP and biomedical domains; generalization to other fields unexplored. Biomedical case study is preliminary with only 2 annotators. Gold test set (194 instances) is small. IE preprocessing adds noise (79.7% overall pass rate, relation extraction only 65% precision) and this noise propagates to training data. Models tend to generate surface-level concept recombinations rather than deeply novel ideas. Seed term provided as input (sampled from ground truth) rather than user-provided, limiting real-world applicability. Novelty boosting limited by retrieval model quality. Evaluation by PhD students only; annotator expertise differences not explored. T5 and GPT models not fine-tuned on domain-specific data; potential for memorization from pretraining (though checked for 2022 papers). No fact-checking or external knowledge verification in system. Automatic metrics (ROUGE-L, BERTScore) may not capture novelty well\u2014T5 models score higher automatically but underperform in human evaluation."
+  },
+  {
+    "arxiv": "2504.12976v1",
+    "one_liner": "HypoGen dataset of 5500 structured problem-hypothesis pairs using Bit-Flip-Spark schema with explicit Chain-of-Reasoning; fine-tuning improves hypothesis novelty, feasibility, and overall quality.",
+    "problem": "Current foundation models struggle to produce scientific hypotheses that are both novel and feasible because there is no dedicated dataset that frames Scientific Hypothesis Generation (SHG) as a Natural Language Generation (NLG) task, making it difficult to train models to systematically generate high-quality hypotheses.",
+    "method": "Introduces HypoGen, a dataset of approximately 5500 structured problem-hypothesis pairs extracted from top-tier computer science conferences, structured with a Bit-Flip-Spark schema where: Bit = conventional assumption, Spark = key insight or conceptual leap, Flip = resulting counterproposal. The dataset uniquely integrates an explicit Chain-of-Reasoning component reflecting the intellectual process from Bit to Flip. Models are fine-tuned on Bit-Flip-Spark triples with Chain-of-Reasoning as conditional language modeling, where at inference only the Bit is provided to generate improved hypotheses. Evaluation uses automated metrics and LLM judge rankings for quality assessment.",
+    "grounding_mechanisms": [
+      "deduction",
+      "induction",
+      "proposal_writing"
+    ],
+    "grounding_notes": "Deduction: The Bit-Flip-Spark schema embodies deductive reasoning, where the Bit represents established assumptions from which the model must logically derive counterproposals (Flip). Induction: The explicit Chain-of-Reasoning component captures the inductive process of moving from observations and patterns in prior work to formulating novel hypotheses. Proposal writing: The structured schema and chain-of-reasoning components model and encode the formal proposal development process, where hypotheses are articulated as complete counterproposals grounded in intellectual leaps (Sparks) from prior assumptions.",
+    "datasets": [
+      "HypoGen: ~5500 structured problem-hypothesis pairs extracted from top-tier computer science conferences (NeurIPS, ICML, ICLR, etc.); available at huggingface.co/datasets/UniverseTBD/hypogen-dr1"
+    ],
+    "baselines": [
+      "Untuned foundation models (base LLMs without fine-tuning)",
+      "GPT-4 (used for LLM judge rankings)",
+      "Conditional language modeling without Chain-of-Reasoning (ablation comparison)"
+    ],
+    "metrics": [
+      "Novelty (LLM judge ranking)",
+      "Feasibility (LLM judge ranking)",
+      "Overall quality (LLM judge ranking + automated metrics)",
+      "Automated metrics for quality assessment (specific metrics not detailed in abstract)"
+    ],
+    "key_results": "Fine-tuning models on the HypoGen dataset with Bit-Flip-Spark and Chain-of-Reasoning components leads to improvements in novelty, feasibility, and overall quality of generated hypotheses compared to untuned foundation models. The structured training approach successfully teaches models to generate hypotheses by leveraging the conditioning on Bits (assumptions) to produce high-quality Flips (counterproposals) informed by Sparks (key insights).",
+    "code_links": [
+      "huggingface.co/datasets/UniverseTBD/hypogen-dr1"
+    ],
+    "relevance_to_hypothesis": "Strongly relevant. This paper directly validates the hypothesis by demonstrating that grounding novelty through structured deduction (Bit-Flip logic), induction (Chain-of-Reasoning), and proposal writing (formal counterproposal structure) leads to measurable improvements in hypothesis quality (novelty and feasibility). The Bit-Flip-Spark schema explicitly grounds hypothesis generation in these structured reasoning mechanisms rather than unguided generation, and shows empirically that this grounding improves outcomes.",
+    "limitations": "The abstract does not detail specific limitations, but potential constraints include: dataset limited to computer science conference papers (domain specificity); evaluation relies on LLM judges which may introduce bias; no direct human expert evaluation mentioned in abstract; unclear whether improvements generalize to other scientific domains; exact values of automated metrics not provided in abstract; no ablation studies explicitly mentioned for individual components (Bit vs. Spark vs. Flip vs. Chain-of-Reasoning)."
+  },
+  {
+    "arxiv": "2411.02429v1",
+    "one_liner": "IdeaBench is a benchmark system with a dataset of 2,374 influential papers and 29,408 references across 8 domains, evaluated via two-stage GPT-4o ranking with \"Insight Score\" metric to standardize assessment of LLM research idea generation.",
+    "problem": "Large Language Models show potential for scientific discovery and hypothesis generation, but lack a comprehensive and systematic evaluation framework for assessing their research idea generation capabilities, making it difficult to understand and compare their generative performance in scientific discovery.",
+    "method": "IdeaBench profiles LLMs as domain-specific researchers by grounding them in the same contextual constraints as human researchers (titles, abstracts, and referenced works). A two-stage evaluation framework is employed: (1) GPT-4o ranks generated ideas based on user-specified quality indicators (novelty, feasibility), enabling scalable personalization; (2) relative ranking is calculated using the \"Insight Score\" metric to quantify the chosen quality indicator.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "outcome_imagination"
+    ],
+    "grounding_notes": "Literature comparison: The paper uses retrieval of paper titles, abstracts, and referenced works to provide contextual grounding. LLMs are positioned within the same academic literature context as human researchers. Outcome imagination: The evaluation framework uses GPT-4o to imagine and score the quality (novelty/feasibility) of generated ideas based on user-specified criteria, effectively predicting outcomes of research ideas before actual execution.",
+    "datasets": [
+      "IdeaBench dataset: 2,374 influential papers across 8 research domains with 29,408 referenced works"
+    ],
+    "baselines": [
+      "GPT-4o (used for evaluation framework)",
+      "Various LLM models tested (specific baseline models not detailed in available abstracts)"
+    ],
+    "metrics": [
+      "Insight Score (reference-based metric that quantifies quality indicator - novelty or feasibility, aligns with human judgment)",
+      "User-specified quality indicators (novelty, feasibility)"
+    ],
+    "key_results": "LLMs excel at generating novel ideas but may struggle with generating feasible ideas. The benchmark provides a systematic evaluation framework for measuring and comparing different LLM capabilities in research idea generation, advancing automation of scientific discovery processes. IdeaBench serves as a critical resource for the research community to benchmark LLMs for research ideation.",
+    "code_links": [],
+    "relevance_to_hypothesis": "IdeaBench is directly relevant to the hypothesis as it establishes a standardized benchmark for evaluating LLM idea generation quality. The paper's grounding mechanism (literature context + domain-specific positioning) aligns with the literature_comparison and outcome_imagination categories. The finding that LLMs excel at novelty but struggle with feasibility suggests that grounded approaches may help address the feasibility gap. The paper provides empirical evidence on LLM capabilities that can inform subsequent research on whether additional grounding mechanisms (deduction, induction, proposal writing, small experiments) could further improve idea quality.",
+    "limitations": "The paper does not report specific numerical results or comparisons between grounded vs. ungrounded generation approaches. No explicit ablation studies comparing different grounding mechanisms are mentioned. The paper focuses on benchmarking rather than investigating whether specific grounding techniques improve quality over unguided generation. Baseline comparisons and detailed model-by-model results are not provided in available abstracts."
+  },
+  {
+    "arxiv": "2502.16487v3",
+    "one_liner": "Expert evaluation reveals 24% of 50 LLM-generated research documents contain plagiarism or significant borrowing from existing work, which automated plagiarism detectors fail to catch due to paraphrasing and missing citations.",
+    "problem": "Recent autonomous research agents claim to generate novel research ideas, but there is inadequate validation of whether LLM-generated research documents are truly original or represent paraphrased/borrowed content from existing research. Conventional plagiarism detectors fail to identify idea-level plagiarism in LLM outputs, posing risks to academic integrity and the credibility of automated scientific discovery systems.",
+    "method": "Expert-led evaluation with 13 domain experts assessing 50 LLM-generated research documents under a novel \"situational logic\" framework: rather than evaluating novelty and feasibility (traditional approach), experts were asked to identify similarities and borrowing from existing work. Cases identified by experts were cross-verified by original source paper authors. Researchers conducted controlled experiments testing automated plagiarism detectors (e.g., Turnitin and similar tools) to evaluate their adequacy at catching idea-level plagiarism in LLM outputs.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "none_unguided"
+    ],
+    "grounding_notes": "The paper demonstrates a critical gap: LLM-generated research documents purportedly grounded in literature (through retrieval-augmented approaches used by autonomous agents) fail to properly attribute sources and paraphrase existing ideas without citation. The findings indicate that unguided LLM generation without explicit plagiarism-checking mechanisms produces outputs that appear novel but actually contain substantial borrowing. The paper serves as a cautionary finding about the inadequacy of simple literature-comparison grounding without mechanisms to enforce proper attribution and original contribution validation.",
+    "datasets": [
+      "50 LLM-generated research documents (subset from autonomous research agent outputs)",
+      "Source papers from existing literature used for comparison (verified by original authors)"
+    ],
+    "baselines": [
+      "Turnitin (automated plagiarism detection system)",
+      "Other standard plagiarism detection tools commonly used in academic integrity assessment"
+    ],
+    "metrics": [
+      "Plagiarism detection rate by human experts (24% of 50 documents identified as paraphrased or significantly borrowed)",
+      "Expert-identified similarity categories: (1) paraphrased with one-to-one methodological mapping, (2) significantly borrowed from existing work, (3) varying degrees of similarity (76%), (4) completely novel (small fraction)",
+      "Automated plagiarism detector accuracy/adequacy at catching idea-level plagiarism (measured as insufficient)",
+      "Source author cross-verification of identified plagiarism cases"
+    ],
+    "key_results": "13 experts identified 24% of 50 evaluated LLM-generated research documents as either paraphrased or significantly borrowed from existing work (cross-verified by source authors). The remaining 76% showed varying degrees of similarity with existing work, with only a small fraction appearing completely novel. Critically, these plagiarized documents failed to acknowledge original sources and bypassed built-in plagiarism detectors. Controlled experiments demonstrated that automated plagiarism detection systems are inadequate at catching plagiarized ideas in LLM-generated research, particularly when ideas are paraphrased with terminological shifts rather than verbatim copying.",
+    "code_links": [],
+    "relevance_to_hypothesis": "This paper presents strong negative evidence for the hypothesis that LLMs generate higher quality scientific ideas when grounded through literature comparison. While the paper does not explicitly test grounding mechanisms, it demonstrates that LLMs generating research with apparent literature grounding (via autonomous agents) still produce substantial plagiarism and idea borrowing without proper attribution. The findings underscore that literature-comparison grounding alone\u2014without explicit novelty validation and attribution mechanisms\u2014is insufficient. This suggests that unguided or weakly-grounded generation (literature comparison without verification) produces false-positive novelty claims that mask copying behavior. The paper implies that higher-quality novelty grounding would require mechanisms beyond simple retrieval and comparison, such as deduction-based reasoning about what constitutes genuinely novel contributions or explicit outcome-imagination about whether generated ideas could actually produce new empirical results.",
+    "limitations": "The study evaluated only 50 LLM-generated research documents, which may not be fully representative of all autonomous research agents or LLM architectures. The paper does not provide detailed breakdowns of plagiarism rates across different research domains, LLM systems, or types of research ideas. While expert evaluation is more rigorous than automated detection, the study involves only 13 experts and does not report inter-rater reliability measures. The paper does not investigate whether specific grounding techniques (e.g., explicit novelty-checking loops, outcome-imagination protocols) could mitigate plagiarism issues. The definition and measurement of \"idea-level\" plagiarism versus acceptable paraphrasing may benefit from more explicit operationalization. No analysis of whether plagiarism correlates with claim of novelty or feasibility scores from the original systems generating these documents."
+  },
+  {
+    "arxiv": "2409.06185",
+    "one_liner": "LLMs can generate novel scientific ideas from papers when provided full paper context and retrieval-augmented background knowledge, with evaluation via automated metrics (IAScore, Idea Distinctness Index) and human expert assessment.",
+    "problem": "Large language models show promise for generating future research ideas from scientific papers, but the task lacks clear evaluation standards, making it difficult to assess whether generated ideas are truly novel, relevant, and feasible without extensive manual assessment by domain experts.",
+    "method": "The paper proposes a systematic framework for evaluating LLM-generated research ideas consisting of: (1) Idea Alignment Score (IAScore)\u2014measures how well generated ideas align with author-proposed future directions; (2) Idea Distinctness Index\u2014quantifies semantic diversity among generated ideas using cosine similarity of GPT embeddings; (3) Human evaluation protocol using expert paper authors (5+ years experience, 5+ publications) who rate ideas on relevance (binary), novelty (5-point scale via Best-Worst Scaling), and feasibility/factual correctness (binary). The generation process uses full paper text as context, with Retrieval-Augmented Generation (RAG) as an enhancement strategy that retrieves top 20 related papers from ~190K CS paper collection via BERT embeddings, extracts their contributions, and incorporates this background knowledge into the generation prompt.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "outcome_imagination"
+    ],
+    "grounding_notes": "Literature comparison: The paper uses explicit retrieval of related work from a background knowledge database (~190K papers) and instructs models to review related work sections before generation. Models are prompted to \"Find out the related works in this direction\" and explicitly instructed \"Make sure the future research ideas are very distinct from related papers.\" Outcome imagination: The Idea Alignment Score and Idea Distinctness Index predict and measure properties of future ideas\u2014IAScore evaluates alignment with researcher intentions while Distinctness Index simulates semantic outcome diversity. Human evaluation also assesses feasibility (whether ideas can practically be implemented). The paper compares grounded (with RAG) vs. ungrounded generation, finding RAG reduces non-novel ideas by 50-53%. However, despite grounding efforts, 14-15% of generated ideas were rated as non-novel by experts, indicating grounding alone is insufficient.",
+    "datasets": [
+      "S2ORC (Semantic Scholar Open Research Corpus) - 1,250 papers total (250 each from CS, Economics, Physics, Chemistry, Medical) published post-2022",
+      "IdeaMatcher training set - 61 matching + 61 non-matching idea pairs (30:70 validation/test split)",
+      "Human evaluation set - 660 ideas from 66 CS papers and 630 ideas from 63 Physics papers",
+      "Background knowledge database - approximately 190,000 CS paper titles and abstracts via Semantic Scholar API"
+    ],
+    "baselines": [
+      "Claude-2 (cutoff August 2023)",
+      "Gemini-1.0-pro (cutoff February 2023)",
+      "GPT-3.5-turbo (cutoff December 2023)",
+      "GPT-4 (cutoff December 2023)",
+      "Later analysis: GPT-4o, Claude-3, Gemini-2.5, Llama-70B",
+      "For IdeaMatcher component: RoBERTa MNLI (65.5% accuracy), BERTScore (75.4% accuracy), GPT-based prompting (91.8% accuracy - selected method)"
+    ],
+    "metrics": [
+      "Idea Alignment Score (IAScore) - measures alignment between generated ideas and author-proposed future directions, calculated as average matching score per paper normalized by author-proposed idea count; reported for CS domain with values around 0.28-0.41",
+      "Idea Distinctness Index - quantifies semantic diversity via cosine similarity between GPT embeddings (1 - sim(vi, vj)), ranges 0 (identical) to 1 (maximally distinct)",
+      "Novelty rating - 5-point scale using Best-Worst Scaling, with human-rated distributions (e.g., 7.83% non-novel, 42.61% moderately novel, 28.70% very novel, 6.96% extremely novel for GPT-4)",
+      "Relevance - binary classification of idea alignment with research topic (e.g., GPT-4: 93.34%, Claude: 76.67%)",
+      "Feasibility - binary rating of practical implementability and factual correctness (e.g., GPT-4: 96.64%, Claude: 83.34%)",
+      "Inter-annotator agreement - Cohen's kappa = 0.83"
+    ],
+    "key_results": "On the 1,250-paper S2ORC dataset across five domains: (1) GPT-4o achieved highest IAScore (~0.41 in CS), outperforming GPT-4/Claude-3 (~0.39), while Gemini-1.0 scored lowest (~0.28); (2) Novelty distribution for GPT-4 shows 28.70% very novel and 6.96% extremely novel ideas (42.61% moderately novel), but 7.83% rated non-novel; Claude showed 20.86% very novel, 16.52% extremely novel, but 14.78% non-novel; (3) Relevance achieved 93.34% (GPT-4) vs 76.67% (Claude); Feasibility achieved 96.64% (GPT-4) vs 83.34% (Claude); (4) RAG-augmented generation reduced non-novel ideas by 50-53% compared to ungrounded baseline, though showed only marginal improvement in extremely novel ideas; (5) Physics domain showed similar trends with slightly lower performance; (6) Human evaluators with domain expertise confirmed that LLM-generated ideas met scientific standards when grounded, with high inter-annotator agreement (kappa=0.83).",
+    "code_links": [
+      "https://github.com/sandeep82945/Future-Idea-Generation.git - Official repository containing datasets and code implementations"
+    ],
+    "relevance_to_hypothesis": "This paper directly tests whether grounding improves LLM idea generation quality, aligning with the hypothesis. It compares grounded approaches (full paper context + RAG background knowledge) against ungrounded baselines, finding that grounding reduces non-novel ideas by 50-53%. However, the results are mixed: despite literature-based grounding, 14-15% of ideas remain non-novel according to expert evaluation. The paper implements literature_comparison grounding (explicit retrieval of related work) and outcome_imagination (predicting idea properties via IAScore and feasibility assessment). The finding that grounding helps but doesn't guarantee novelty suggests grounding mechanisms may need to be stronger or combined with additional constraints. The paper does NOT systematically test other grounding mechanisms like deduction, induction, proposal_writing, or small_experiments\u2014it focuses primarily on literature retrieval and context provision.",
+    "limitations": "The paper's grounding evaluation is limited to two mechanisms (literature retrieval + full paper context) and does not systematically compare multiple grounding approaches as hypothesized. The dataset is relatively small (1,250 papers) and focused on five academic domains, limiting generalizability across scientific fields. Novelty assessment relies entirely on human evaluation of small samples (660 CS ideas from 66 papers) rather than scalable automatic methods; despite grounding, 14-15% of ideas were rated non-novel, indicating grounding alone is insufficient. The IdeaMatcher component uses only GPT-based prompting (91.8% accuracy) without exploring other matching approaches, and the RAG component queries only ~190K papers, which may miss emerging research. The paper does not test whether providing more sophisticated grounding (e.g., structured retrieval of methodologies, negative examples of failed ideas, iterative refinement) would further improve novelty. No analysis of failure modes or investigation of which types of papers or domains benefit most from grounding."
+  },
+  {
+    "arxiv": "2402.14424v3",
+    "one_liner": "Causal knowledge graphs extracted from 43,312 psychology articles enable LLMs to generate well-being hypotheses matching expert novelty while significantly outperforming LLM-only generation.",
+    "problem": "Automated hypothesis generation in psychology lacks grounding in domain knowledge. Existing LLM-only approaches produce hypotheses with limited novelty and scientific validity, failing to match expert-level research ideation.",
+    "method": "The authors: (1) Analyzed 43,312 psychology articles using LLMs to extract causal relation pairs (entity-relation-entity triples); (2) Constructed a specialized psychology causal knowledge graph from these relations; (3) Applied link prediction algorithms to the graph to generate novel psychological hypotheses (targeting well-being as the focal domain); (4) Compared generated hypotheses against three baselines: doctoral scholar-generated ideas, LLM-only generation (without graph), and the combined LLM+graph approach; (5) Evaluated novelty and quality using human assessment and deep semantic analysis.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "induction",
+      "deduction",
+      "small_experiments"
+    ],
+    "grounding_notes": "Literature comparison: The method grounds hypothesis generation in 43,312 real psychology articles by extracting causal knowledge from this extensive corpus, ensuring ideas are anchored in existing research. Induction: Observing patterns across 43,312 psychology articles and inferring causal relationships (entity pairs and their relations) from textual evidence. Deduction: The causal knowledge graph represents formal causal theory; link prediction algorithms apply deductive reasoning by predicting new causal links based on existing graph structure and patterns. Small experiments: The study generates 130 candidate hypotheses and directly compares them against expert scholars and LLM-only baselines through rigorous statistical testing (t-tests with p<0.01), evaluating both novelty and scientific quality through semantic analysis.",
+    "datasets": [
+      "Psychology article corpus (43,312 articles)",
+      "Expert-generated hypotheses from doctoral scholars",
+      "LLM-generated hypotheses (LLM-only baseline)",
+      "130 generated psychological hypotheses (well-being focus)"
+    ],
+    "baselines": [
+      "LLM-only hypothesis generation (no graph)",
+      "Doctoral scholar-conceived research ideas (human expert)",
+      "Deep semantic analysis for quality assessment"
+    ],
+    "metrics": [
+      "Novelty (evaluated through human assessment and semantic analysis)",
+      "t-test comparisons: t(59)=3.34, p=0.007 (LLM+graph vs. expert)",
+      "t(59)=4.32, p<0.001 (LLM+graph vs. LLM-only)",
+      "Semantic similarity/divergence metrics (from deep semantic analysis)"
+    ],
+    "key_results": "The combined LLM+causal graph approach generated hypotheses that matched expert-level novelty (doctoral scholars) while significantly outperforming LLM-only generation. Specifically: (1) LLM+graph vs. expert: t(59)=3.34, p=0.007 (no significant gap in novelty); (2) LLM+graph vs. LLM-only: t(59)=4.32, p<0.001 (substantial improvement); (3) Deep semantic analysis corroborated these findings. The study generated 130 viable psychological hypotheses focused on well-being, demonstrating that structured domain knowledge (causal graphs) substantially improves LLM-based hypothesis generation quality.",
+    "code_links": [],
+    "relevance_to_hypothesis": "This paper directly supports the hypothesis that novelty is grounded through multiple mechanisms. The key finding is that LLM hypothesis generation becomes significantly more novel (p<0.001 advantage over LLM-only) when grounded via: (1) Literature comparison (extracting from 43K papers), (2) Induction (observing causal patterns), (3) Deduction (applying causal graph theory), and (4) Small experiments (comparing against expert and baseline hypotheses). The paper demonstrates that grounding through structured knowledge extraction and comparison produces expert-level novelty, validating the hypothesis that unguided LLM generation is insufficient without grounding mechanisms.",
+    "limitations": "The study focuses exclusively on well-being as the target domain for hypothesis generation, limiting generalizability to other psychological constructs or domains. Evaluation is limited to novelty and semantic similarity; feasibility and practical scientific validity of the 130 generated hypotheses are not comprehensively assessed. The comparison uses only 60 doctoral scholars (based on t-test df=59), which may not represent the full spectrum of expert judgment. The link prediction approach may generate hypotheses representing statistical patterns rather than causal mechanisms, despite the graph's causal framing. The paper does not report code or dataset availability, limiting reproducibility."
+  },
+  {
+    "arxiv": "2504.05496v1",
+    "one_liner": "A comprehensive survey of hypothesis generation methods for scientific discovery using LLMs, proposing a taxonomy of approaches from simple prompting to complex frameworks and analyzing techniques for improving hypothesis quality through novelty boosting and structured reasoning.",
+    "problem": "Hypothesis generation is a fundamental challenge in scientific discovery, increasingly hindered by information overload and disciplinary fragmentation. While recent LLM advances offer promise for automating this process, there lacks a systematic understanding of existing methods, their strengths/limitations, and how to evaluate hypothesis quality effectively.",
+    "method": "A comprehensive systematic survey that (i) reviews and categorizes existing hypothesis generation methods into a taxonomy spanning human-centric approaches, literature-based discovery, and LLM-driven techniques; (ii) analyzes techniques for improving hypothesis quality including novelty boosting and structured reasoning strategies; (iii) provides an overview of evaluation methodologies combining human expert assessment with automated metrics; (iv) discusses key challenges and future directions including multimodal integration and human-AI collaboration.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "induction",
+      "deduction",
+      "proposal_writing",
+      "outcome_imagination",
+      "small_experiments"
+    ],
+    "grounding_notes": "The survey maps grounding mechanisms across methods: (1) Literature comparison is central to literature-based discovery methods that mine \"undiscovered public knowledge\" by connecting disparate concepts across papers without explicit cross-references, leveraging knowledge graphs and biomedical ontologies like MeSH and UMLS. (2) Induction appears in observation-to-hypothesis pipelines where systems identify patterns in scientific literature to propose hypotheses. (3) Deduction is employed through structured reasoning approaches where LLMs use chain-of-thought logic to construct connections between concepts based on theoretical principles. (4) Outcome imagination features in systems that predict potential experimental outcomes when concepts are combined. (5) Small experiments are referenced in validation frameworks where hypotheses are tested against empirical evidence. (6) Proposal writing is implicitly present in LLM-driven methods that generate full hypothesis formulations grounded in literature context.",
+    "datasets": [
+      "PubMed/MEDLINE (biomedical literature corpus)",
+      "Semantic Scholar corpus (via API: https://api.semanticscholar.org/)",
+      "Knowledge graphs with biomedical ontologies (MeSH - Medical Subject Headings, UMLS)",
+      "Gene interaction databases",
+      "Disease databases",
+      "arXiv papers (referenced for computer science domain)"
+    ],
+    "baselines": [
+      "Random hypothesis generation",
+      "Statistical co-occurrence models",
+      "Latent Dirichlet Allocation (LDA) topic modeling",
+      "Traditional knowledge graph systems",
+      "Swanson's undiscovered public knowledge framework",
+      "MOLIERE system (combines bibliographic data with biomedical ontologies)",
+      "Traditional information retrieval-based ranking methods",
+      "GPT variants",
+      "PaLM",
+      "LLaMA",
+      "Mistral"
+    ],
+    "metrics": [
+      "Novelty assessment (distinguishing genuine new connections from existing literature)",
+      "Literature novelty scores",
+      "Knowledge graph connectivity measures",
+      "Semantic diversity calculations",
+      "Citation-based validation signals",
+      "Relevance scoring (alignment with contemporary research directions)",
+      "Feasibility analysis (practical implementation possibility)",
+      "Scientific plausibility (alignment with established scientific principles)",
+      "Human expert evaluation by domain specialists"
+    ],
+    "key_results": "The survey identifies that hybrid approaches combining LLM generation with literature grounding produce the most promising results. Key findings: (1) LLMs excel at creative synthesis but require structured validation through knowledge bases and literature grounding; (2) Literature-based discovery methods effectively identify undiscovered public knowledge by connecting disparate research areas; (3) Automated evaluation metrics provide scalable preliminary filtering, but human expert evaluation remains essential for assessing true novelty and scientific merit; (4) The taxonomy reveals progression from manual expert analysis through automated literature processing to AI-augmented generation strategies; (5) Evaluation requires combining multiple methodologies (human + automated) to address inherent limitations in single approaches; (6) Key challenges include scalability, bias concerns, novelty detection difficulty, ground truth ambiguity, and reproducibility constraints.",
+    "code_links": [
+      "https://api.semanticscholar.org/"
+    ],
+    "relevance_to_hypothesis": "This survey is highly relevant to the hypothesis \"LLMs generate higher quality scientific ideas when novelty is grounded through deduction, induction, proposal writing, outcome imagination, small experiments, or literature comparison, vs. unguided generation.\" The paper provides a comprehensive taxonomy of grounding mechanisms and directly addresses how different grounding approaches (literature-based discovery, structured reasoning, knowledge graph integration) improve hypothesis quality compared to unguided LLM generation. It emphasizes that hybrid approaches combining LLMs with literature grounding substantially outperform ungrounded LLM-only approaches, providing evidence for the superiority of grounded methods across the deduction/induction/literature comparison/outcome imagination dimensions.",
+    "limitations": "The survey identifies several key limitations: (1) Scalability of manual expert review becomes prohibitively expensive at large scales; (2) Both human reviewers and automated systems demonstrate systematic biases; (3) Novelty detection remains computationally challenging\u2014distinguishing genuinely novel ideas from incremental variations is difficult; (4) Ground truth ambiguity\u2014no clear standard exists for definitively measuring hypothesis quality; (5) Reproducibility constraints\u2014validating hypotheses often requires extensive experimental resources; (6) Information overload and disciplinary fragmentation complicate systematic hypothesis generation; (7) Evaluation of LLM-generated hypotheses is inherently difficult, requiring substantial domain expertise, contextual understanding, and awareness of current research landscape; (8) The paper is structured as a survey (11 pages), so specific quantitative experimental results comparing grounding mechanisms are limited\u2014it synthesizes existing literature rather than providing novel empirical findings."
+  },
+  {
+    "arxiv": "2410.13185v5",
+    "one_liner": "CoI agent organizes research literature in chain structure mirroring progressive domain development to enhance LLM ideation quality, achieving human-comparable results at ~$0.50 per idea via Idea Arena evaluation.",
+    "problem": "Exponential growth in scientific literature makes it challenging for researchers to stay current with advances and identify meaningful research directions. Existing LLM-based idea generation methods either trivially prompt LLMs or directly expose them to extensive literature without indicating useful information, failing to effectively capture current research advancements.",
+    "method": "Chain-of-Ideas (CoI) agent: An LLM-based agent inspired by human researcher workflows that organizes relevant literature in a chain structure (CHAIN structure) to mirror progressive development in a research domain. The agent systematically arranges papers to reflect how research evolves, enabling LLMs to better capture current advancements. Complemented by Idea Arena, an evaluation protocol that comprehensively assesses idea generation from multiple perspectives aligned with researcher preferences.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "outcome_imagination"
+    ],
+    "grounding_notes": "CoI organizes relevant literature in a structured chain format, enabling systematic literature comparison and novelty detection by comparing generated ideas against the organized paper chain (literature_comparison). The method involves iterative refinement of idea generation based on literature feedback mechanisms, constituting outcome imagination through projected research trajectories based on domain history.",
+    "datasets": [
+      "SemanticScholar citations and papers (specific counts not stated in abstract)",
+      "Domain-specific literature corpora organized by research area"
+    ],
+    "baselines": [
+      "Baseline LLM prompting approaches",
+      "Direct literature exposure methods",
+      "Competing methods compared in Idea Arena evaluation"
+    ],
+    "metrics": [
+      "Idea Arena evaluation protocol: multi-perspective assessment of idea quality aligned with human researcher preferences",
+      "Novelty assessment",
+      "Feasibility assessment",
+      "Quality comparison against human-generated research ideas"
+    ],
+    "key_results": "CoI agent consistently outperforms other methods and achieves comparable quality to humans in research idea generation. Budget efficiency: minimum cost of $0.50 to generate a candidate idea with corresponding experimental design. Idea Arena evaluation protocol demonstrates alignment with human researcher preferences across multiple quality dimensions.",
+    "code_links": [
+      "Code available (specific GitHub repository URL not provided in abstract, but paper indicates code is available)"
+    ],
+    "relevance_to_hypothesis": "Highly relevant. CoI demonstrates grounding novelty through literature_comparison (organizing papers in chain structure and comparing against literature) and outcome_imagination (projecting research trajectories). This provides empirical evidence that structured literature organization (grounded mechanism) enhances LLM idea quality compared to unguided approaches, directly supporting the hypothesis that grounded novelty mechanisms improve scientific idea generation quality.",
+    "limitations": "Abstract does not detail: specific dataset sizes, full baseline method names, quantitative metric definitions or scoring procedures, or comparative performance margins. Limited information on experimental scope (number of domains/papers tested), human evaluation scale/sample size, or robustness across different research domains. Unclear whether cost efficiency ($0.50) remains consistent across different complexity levels or domains."
+  },
+  {
+    "arxiv": "2410.09403v4",
+    "one_liner": "VirSci is an LLM-based multi-agent system that mimics research team collaboration to generate, evaluate, and refine scientific ideas, outperforming state-of-the-art methods on novelty.",
+    "problem": "LLMs fail to replicate the collaborative nature of real-world scientific teams where diverse experts collectively work to generate novel, high-quality research ideas; existing single-agent approaches lack the diverse perspectives and iterative refinement mechanisms found in human scientific collaboration.",
+    "method": "VirSci organizes a team of LLM-based agents to collaboratively generate, evaluate, and refine research ideas through a multi-agent system that mimics the teamwork inherent in scientific research. The system coordinates multiple specialized agents working iteratively together on scientific ideation tasks.",
+    "grounding_mechanisms": [
+      "proposal_writing",
+      "outcome_imagination",
+      "induction"
+    ],
+    "grounding_notes": "The multi-agent architecture involves proposal_writing where agents articulate and propose full research ideas with detailed specifications; outcome_imagination through agent-based evaluation and prediction of idea potential; and induction via iterative refinement based on feedback from evaluator agents. Collaboration mechanisms drive novelty generation through diverse perspectives and team-based refinement rather than unguided single-agent prompting.",
+    "datasets": [
+      "Not specified in available abstract and metadata"
+    ],
+    "baselines": [
+      "State-of-the-art method (not explicitly named in abstract)"
+    ],
+    "metrics": [
+      "Novelty of generated scientific ideas (primary metric; specific measurement method not detailed in abstract)"
+    ],
+    "key_results": "VirSci outperforms the state-of-the-art method in producing novel scientific ideas. Investigation of collaboration mechanisms reveals insights into factors contributing to higher novelty in idea generation. The multi-agent approach demonstrates the effectiveness of team-based scientific ideation.",
+    "code_links": [
+      "https://github.com/open-sciencelab/Virtual-Scientists"
+    ],
+    "relevance_to_hypothesis": "VirSci directly supports the grounded-novelty hypothesis by demonstrating that structured grounding mechanisms\u2014specifically proposal_writing, outcome_imagination, and induction through multi-agent collaboration\u2014produce higher-quality novel ideas compared to unguided approaches. The system's multi-agent architecture provides concrete grounding through collaborative evaluation and iterative refinement, moving beyond simple prompting (none_unguided) toward systematically grounded novelty generation through team-based reasoning.",
+    "limitations": "The abstract and available metadata do not provide detailed information about: specific dataset names/sizes used in evaluation, exact names of baseline systems compared against, precise metric definitions and measurement methodologies, quantitative performance improvements, ablation study details, error analysis, or potential failure modes of the multi-agent approach. The paper's full experimental methodology remains largely undocumented in the accessible portions."
+  },
+  {
+    "arxiv": "2412.14626v2",
+    "one_liner": "Two-stage SFT + controllable RL framework optimizes research idea generation by balancing novelty, feasibility, and effectiveness through multi-dimensional reward models and dynamic sentence-level control.",
+    "problem": "LLMs struggle to generate research ideas that are simultaneously novel, feasible, and effective; existing prompting-based approaches produce ideas misaligned with expert standards and lack mechanisms to navigate inherent trade-offs (e.g., high novelty often reduces feasibility).",
+    "method": "Two-stage framework: (1) Supervised Fine-Tuning stage: train on 1,000 paper-idea pairs from ICLR 2023-2024 using cross-entropy loss; (2) RL stage with three components: (a) Multi-dimensional reward modeling\u2014train three separate reward models (novelty, feasibility, effectiveness) on OpenReview data (3,271 papers) using MLP heads atop LLM backbone; (b) PPO-based controllable RL with dimensional controllers: add learnable weight matrices Wn, Wf, We to modify layer outputs as Ml_i = Ml + \u03b5i Wi Ml (Section 3.4); (c) Dynamic decoding: train RNN on 1,000 high-quality ideas to predict sentence-level control weights \u03b5t = (\u03b5t_n, \u03b5t_f, \u03b5t_e) conditioned on prior sentences (Section 3.5).",
+    "grounding_mechanisms": [
+      "small_experiments",
+      "literature_comparison",
+      "outcome_imagination"
+    ],
+    "grounding_notes": "Small experiments: The framework uses PPO-trained reward models evaluated against human expert feedback (15 domain experts, 30 papers, Fleiss' kappa 0.41-0.70), creating an empirical feedback loop to guide generation. Literature comparison: Training data extracted from ICLR/NeurIPS papers; novelty scoring explicitly compares generated ideas against \"existing works\" by retrieving related papers via Semantic Scholar for retrieval-augmented evaluation. Outcome imagination: Dynamic decoding module predicts dimensional trade-offs at sentence level\u2014the RNN learns to anticipate which dimensions are most valuable at different points in the idea (e.g., prioritizing novelty in method sections, feasibility in experiment plans), effectively imagining how idea quality varies with context.",
+    "datasets": [
+      "ICLR 2023-2024 (1,000 papers for SFT)",
+      "NeurIPS 2023-2024 (3,271 papers for RL reward training)",
+      "500 papers evaluation split (30 manually reviewed)",
+      "Total: 6,765 papers collected, 5,687 usable; review data from OpenReview"
+    ],
+    "baselines": [
+      "ResearchAgent (Baek et al., 2025) - agentic ideation with citation knowledge graph retrieval",
+      "MHABTO / Many Heads Are Better Than One (Su et al., 2025) - multi-agent LLM discussion",
+      "SFT only on T5, LLaMA-2-7B, LLaMA-3-8B, Qwen-2.5-3B",
+      "SFT + RLHF without controllers (ablation)",
+      "ChatGPT (gpt-4-0314) for reference (Table 7)"
+    ],
+    "metrics": [
+      "Novelty (0-10 scale): idea originality vs existing works",
+      "Feasibility (0-10 scale): practicality within 1-2 months, limited GPU, API access",
+      "Effectiveness (0-10 scale): likelihood of achieving performance improvement",
+      "Overall score (composite)",
+      "Automatic evaluation: GPT-4 with retrieval-augmented prompting (Semantic Scholar)",
+      "Manual evaluation: 15 domain experts (3 per idea), inter-annotator agreement (Fleiss' kappa)",
+      "Correlation metrics: Pearson r and Spearman \u03c1 between human and automatic scores"
+    ],
+    "key_results": "LLaMA-3-8B with SFT+RLHF+All Controls (Dynamic) achieved: Novelty 6.2, Feasibility 6.4, Effectiveness 6.1, Overall 6.3 (p<0.05 vs all baselines). Manual evaluation (Table 2) on LLaMA-3-RLHF+Dynamic: Novelty 5.7, Feasibility 6.4, Effectiveness 5.4, Overall 5.8. Correlation with human scores: Pearson r [Novelty: 0.982, Feasibility: 0.948, Effectiveness: 0.716, Overall: 0.871]; Spearman \u03c1 [Novelty: 0.955, Feasibility: 0.937, Effectiveness: 0.764, Overall: 0.964]. Trade-off analysis (Table 5): increasing novelty controller weight from 1.0 to 4.0 raised novelty from 6.4 to 7.3 but reduced feasibility from 6.1 to 4.9. Dynamic decoding outperformed static across all metrics; outperformed ResearchAgent despite its advanced retrieval mechanisms.",
+    "code_links": [
+      "Paper does not provide explicit GitHub link; code availability not mentioned in provided excerpt. Appendices detail prompts (K-N) for extraction and evaluation, enabling reproducibility."
+    ],
+    "relevance_to_hypothesis": "PARTIALLY ALIGNED: The paper demonstrates that grounded approaches (specifically small_experiments via reward-trained feedback and literature_comparison via retrieval-augmented novelty scoring) improve idea quality over baseline LLMs. However, the grounding is indirect: the framework learns to generate ideas via RL from multi-dimensional rewards, not by explicitly invoking reasoning steps. The work does NOT test the hypothesis that explicit grounding mechanisms (e.g., chain-of-thought deduction, explicit proposal writing templates, outcome prediction loops) generate higher-quality ideas than unguided generation. Instead, it optimizes generation through learned reward signals. The paper supports the broader claim that structured, multi-dimensional evaluation (novelty/feasibility/effectiveness) yields better ideas than single-metric optimization, but does not isolate the causal effect of grounding techniques on novelty vs unguided baselines.",
+    "limitations": "Acknowledged: (1) Citation prediction as quality proxy not explored; (2) Interpretability of dimensional controller adjustments remains unclear. Additional: (3) Evaluation limited to ML domain (ICLR/NeurIPS); generalization to other fields unknown; (4) Manual evaluation only on 30 papers with limited inter-annotator agreement for novelty (\u03ba=0.41); (5) No ablation isolating impact of each component (SFT, reward models, controllers, dynamic decoding); (6) Automatic evaluation depends on GPT-4 judgment; potential bias if same model used for generation baselines; (7) Feasibility scoring assumes fixed resource constraints (1-2 months, limited GPU); real-world feasibility varies; (8) No comparison with simpler baselines (e.g., retrieval-augmented prompting, few-shot examples); (9) Training data curated from accepted/rejected ICLR/NeurIPS papers\u2014may not reflect held-out distribution of novel ideas."
+  },
+  {
+    "arxiv": "2507.00310v3",
+    "one_liner": "Open-ended autonomous scientific discovery using Bayesian surprise as a formal objective for MCTS-driven hypothesis exploration, achieving 5-29% more discoveries than baselines on 21 real-world datasets.",
+    "problem": "Autonomous scientific discovery (ASD) typically relies on human-specified research questions in goal-driven settings. Existing open-ended ASD approaches struggle because they either use crude diversity heuristics that fail to navigate vast hypothesis spaces, or rely on subjective proxies (e.g., \"human interestingness\") with imprecise definitions. This work addresses how to systematically drive scientific exploration using an objective, quantifiable criterion grounded in epistemic value.",
+    "method": "AutoDiscovery uses Bayesian surprise to quantify the epistemic shift from an LLM's prior beliefs to posterior beliefs after experimental results. The system employs Monte Carlo Tree Search (MCTS) with progressive widening, using surprisal (KL divergence between posterior and prior belief distributions) as the reward function. The method: (1) generates hypotheses via LLM; (2) designs and executes experiments on data; (3) elicits LLM belief distributions (prior and posterior); (4) computes Bayesian surprise as the reward signal; (5) uses MCTS progressive widening to efficiently explore the nested hypothesis tree; (6) iterates to discover surprising hypotheses.",
+    "grounding_mechanisms": [
+      "small_experiments",
+      "outcome_imagination",
+      "induction",
+      "deduction"
+    ],
+    "grounding_notes": "The method grounds novelty assessment through small_experiments (running statistical tests and analyses on real datasets to generate empirical evidence), outcome_imagination (Bayesian surprise quantifies predicted epistemic shifts\u2014how the LLM's beliefs shift after observing outcomes), induction (observing experimental results and updating beliefs), and deduction (using formal Bayesian inference to compute KL divergence as the novelty metric). The grounding is NOT via literature_comparison (no explicit retrieval of prior papers) or proposal_writing (no full proposal generation required before testing), and NOT unguided (surprise is a well-defined, quantifiable objective).",
+    "datasets": [
+      "freshwater-fish (DiscoveryBench, biology)",
+      "nls-bmi (DiscoveryBench, sociology/health)",
+      "nls-ses (DiscoveryBench, sociology/economics)",
+      "nls-incarceration (DiscoveryBench, sociology)",
+      "requirement-engineering (DiscoveryBench, computer science)",
+      "affairs (BLADE, behavioral)",
+      "amtl (BLADE, behavioral)",
+      "boxes (BLADE, behavioral)",
+      "caschools (BLADE, economics)",
+      "conversation (BLADE, behavioral)",
+      "crofoot (BLADE, animal behavior)",
+      "fertility (BLADE, sociology)",
+      "fish (BLADE, biology)",
+      "hurricane (BLADE, environmental)",
+      "mortgage (BLADE, economics/finance)",
+      "panda_nuts (BLADE, behavioral)",
+      "reading (BLADE, education)",
+      "soccer (BLADE, sports)",
+      "teachingratings (BLADE, education)",
+      "toy (BLADE, behavioral)",
+      "SEA-AD (multimodal cellular atlas, neuroscience/Alzheimer's)"
+    ],
+    "baselines": [
+      "Repeated independent sampling",
+      "Last-K linear search (K=100)",
+      "Greedy tree search (C=0)",
+      "Beam search (width \u03b2=8, branching k=8)",
+      "Programmatic search (deterministic exhaustive enumeration)"
+    ],
+    "metrics": [
+      "Surprisal Count (number of hypotheses producing belief shifts within evaluation budget)",
+      "Search Efficiency (cumulative surprisals discovered per timestep)",
+      "Human Surprisal Correlation (proportion of LLM-surprising hypotheses confirmed surprising by domain experts; reported as 0.67)",
+      "Bayesian Surprise / KL divergence (KL divergence between posterior and prior belief distributions)",
+      "Experiment Validity (98.58%)",
+      "Implementation Validity (98.01%)",
+      "Deduplication Accuracy (90.76%)"
+    ],
+    "key_results": "AutoDiscovery substantially outperforms all baselines, discovering 5-29% more surprises on 21 real-world datasets under fixed evaluation budget constraints. The method achieves best performance on 17 of 21 datasets. Human evaluation demonstrates strong correlation between Bayesian surprise and human expert assessment (0.67, 95% CI: [0.63, 0.71]), substantially outperforming alternative metrics (LLM Surprisal: 0.11, Interestingness: 0.15, Utility: 0.21). This indicates that optimizing for Bayesian surprise serves as an effective proxy for discovering hypotheses that genuinely expand an LLM agent's knowledge frontier, with two-thirds of discoveries validated as surprising by domain experts.",
+    "code_links": [
+      "https://github.com/allenai/autodiscovery",
+      "https://github.com/allenai/discoverybench",
+      "https://github.com/behavioral-data/BLADE"
+    ],
+    "relevance_to_hypothesis": "HIGHLY RELEVANT. This paper directly instantiates the grounded novelty hypothesis: AutoDiscovery grounds novelty assessment through small_experiments (running real statistical analyses on actual datasets), outcome_imagination (computing Bayesian surprise as the shift in predicted outcomes), and deduction (formal KL divergence computation). The paper demonstrates empirically that this grounded approach (5-29% improvement) substantially outperforms unguided alternatives (like random sampling, linear search, or greedy heuristics). The human evaluation (0.67 correlation) confirms that this grounded, quantifiable approach to novelty actually aligns with expert judgment better than ungrounded alternatives (0.11-0.21 correlation for other metrics). This is direct evidence that grounding novelty assessment in concrete experimental outcomes and formal theory (Bayesian inference) produces more novel and valued scientific discoveries.",
+    "limitations": "The method depends on LLM capability to elicit coherent prior/posterior beliefs; unreliable belief elicitation could degrade reward signals. The approach requires running actual experiments and statistical analyses (computationally expensive vs. lightweight prompting), limiting scalability. Human evaluation was limited to qualitative domain expert assessment rather than downstream scientific validation (e.g., did hypotheses lead to reproducible findings?). The 21-dataset evaluation, while diverse, covers primarily structured tabular data; applicability to other modalities (text, images, experiments requiring wet lab work) is unexplored. The paper does not deeply analyze failure modes or scenarios where Bayesian surprise leads to spurious discoveries. Deduplication accuracy at 90.76% suggests some redundancy in discovered hypotheses remains."
+  },
+  {
+    "arxiv": "2309.02726",
+    "one_liner": "LLMs can generate novel and valid social science hypotheses through a multi-module framework (MOOSE) with three feedback mechanisms (present, past, future) that ground hypothesis generation through iterative refinement.",
+    "problem": "Prior work on hypothetical induction for hypothesis discovery operates in constrained settings with manually selected observations and commonsense hypotheses. This work tackles the challenge of generating novel (not existing in literature) and valid (reflecting reality) scientific hypotheses from open-domain raw web corpus without manual observation selection, specifically for social science academic research.",
+    "method": "MOOSE (MultimOdule framewOrk with paSt present future feEdback) is a multi-module LLM-based framework for automated open-domain hypothetical induction (TOMATO task). Base framework: (1) Background_Finder extracts relevant research contexts; (2) Inspiration_Title_Finder and Inspiration_Finder retrieve related concepts from web corpus via BM25 title matching; (3) Hypothesis_Proposer generates hypotheses from backgrounds and inspirations. Three feedback mechanisms refine outputs: Present-feedback iteratively improves hypotheses via Reality_Checker, Novelty_Checker (using related surveys), and Clarity_Checker. Past-feedback uses future module evaluations to improve inspiration selection. Future-feedback-1 provides justifications for background/inspiration selection; Future-feedback-2 adds Hypothesis_Suggestor module to provide preliminary suggestions before full hypothesis generation.",
+    "grounding_mechanisms": [
+      "induction",
+      "literature_comparison",
+      "outcome_imagination",
+      "proposal_writing"
+    ],
+    "grounding_notes": "Induction: Core reasoning type - deriving hypotheses from observations (background passages) via theoretical inspirations. Literature comparison: Novelty checker evaluates against related survey corpus (14 survey papers collected) to ensure hypotheses are new to existing literature. Outcome imagination: Implicit in present-feedback mechanisms where checkers evaluate future quality dimensions (reality, novelty, clarity) before final generation. Proposal writing: Hypothesis_Suggestor provides initial suggestions on how to combine background and inspirations into complete research proposals, which Hypothesis_Proposer then builds upon. The framework systematically chains observations (web corpus) through inspiration-grounded reasoning to generate novel hypotheses, with feedback loops checking consistency with reality and novelty relative to literature.",
+    "datasets": [
+      "TOMATO dataset: 50 social science papers published after January 2023 in top social science journals (7 disciplines: Communication 5, Psychology 7, Human Resource Management 8, Information Systems 8, International Business 5, Management 6, Marketing 11). For each paper: extracted main hypothesis, research background, inspirations. Manually identified semantically similar web passages matching background/inspirations from raw web corpus (news, Wikipedia, business reviews). Also collected 14 related survey papers for novelty checking. Dataset fully constructed by social science PhD student with expert annotations on complexity levels."
+    ],
+    "baselines": [
+      "LLM baseline: Direct corpus-to-hypothesis generation using gpt-3.5-turbo without structured framework modules (natural baseline for open-domain task)"
+    ],
+    "metrics": [
+      "Validness (5-point Likert): whether hypothesis completely/almost completely/moderately/majorly/completely violates reality; Reality_Checker evaluates if hypothesis reflects world facts",
+      "Novelty (5-point Likert): whether hypothesis is completely novel, has main/sub-arguments novel, only minor novel elements, inspires via combination, or not novel at all; Novelty_Checker compares against related survey corpus using semantic similarity",
+      "Helpfulness (5-point Likert): whether hypothesis is mature/adoptable with minor edits/needs major reconstruction/partially inspiring/not helpful at all; overall evaluation metric"
+    ],
+    "key_results": "[\"MOOSE-base outperforms baseline: Validness 3.907 vs 3.954 (similar), Novelty 3.081 vs 2.483 (+24%), Helpfulness 3.859 vs 3.489 (+11%) on GPT-4 evaluation\", \"With all feedback mechanisms: Validness 3.916, Novelty 3.390 (+37% over baseline), Helpfulness 3.931 on GPT-4\", \"Expert evaluation (50 hypotheses, 3 PhD students): MOOSE achieves Validness 3.750, Novelty 3.197, Helpfulness 3.368 vs baseline 3.579, 2.276, 2.632\", \"Present-feedback iterations improve steadily: 4 iterations yields Validness 3.970, Novelty 3.329, Helpfulness 3.951 (GPT-4)\", \"High consistency between expert and GPT-4 evaluation: soft consistency 0.850 (Validness), 0.823 (Novelty), 0.773 (Helpfulness)\", \"Claude3-Opus base model substantially improves absolute scores: Validness 3.875-3.983, Novelty 4.177, Helpfulness 3.868\", \"Expert-validated: Many MOOSE-generated hypotheses recognized as both novel (not in literature) and valid (reflecting reality), with examples including counter-intuitive findings (e.g., collectivist cultures and conspicuous consumption)\"]",
+    "code_links": [
+      "https://github.com/ZonglinY/MOOSE.git (dataset, code, and generated hypotheses)"
+    ],
+    "relevance_to_hypothesis": "This paper directly supports the hypothesis that LLMs generate higher quality scientific ideas when novelty is grounded through specific mechanisms. MOOSE demonstrates that novelty is substantially improved through induction (observations to hypotheses), literature comparison (novelty checker against survey corpus), outcome imagination (multi-aspect feedback evaluation), and proposal writing (hypothesis suggestor providing structured guidance). The framework's iterative feedback mechanisms explicitly ground hypothesis generation, showing novelty improvements of +37% over unguided baselines on expert evaluation. The three feedback mechanisms represent concrete implementations of grounding: present-feedback grounds through immediate quality evaluation; past-feedback grounds inspiration selection through hypothesis consequences; future-feedback-1 grounds through justification-based reasoning; future-feedback-2 grounds through preliminary proposal suggestions. This validates that deliberate grounding strategies substantially enhance novelty while maintaining validity.",
+    "limitations": "Limited dataset scale (50 papers) despite high manual annotation quality per paper. Framework primarily focuses on social science and business disciplines; applicability to natural science domains unclear. Past-feedback for Inspiration_Feedback module relies on human heuristics rather than LLM-generated feedback (noted as limitation in A.10). Automated setting requires no human intervention, limiting controllable generation scenarios where scientists provide their own backgrounds/inspirations. Evaluation relies on GPT-4 and expert evaluation without access to ground-truth hypotheses for direct comparison (justified due to open-domain novel generation setting). Significance evaluation not adopted due to discipline-specific variation. Future-feedback-1 shows limited utility (smaller improvements than Future-feedback-2), suggesting room for optimization. Complexity analysis shows reasoning difficulty varies (9 hard, 17 medium, 24 easy cases), with harder cases potentially underexplored."
+  },
+  {
+    "arxiv": "2510.15614v3",
+    "one_liner": "Evaluates LLMs as set-valued hypothesis generators under underdetermination by measuring Validity, Uniqueness, and Recovery across structured domains with deterministically enumerable solution spaces.",
+    "problem": "Scientific inference often involves underdetermination where multiple mechanistically distinct hypotheses equally fit observed data. Existing benchmarks focus on single-answer correctness and assume unique ground truth, failing to evaluate LLMs' ability to systematically explore and cover the full admissible hypothesis space.",
+    "method": "HypoSpace treats LLMs as samplers over finite hypothesis spaces and proposes three metrics: Validity (VR - precision of valid hypotheses), Uniqueness (NR - non-redundancy/novelty among proposals), and Recovery (RR - coverage of enumerated admissible set H_O). Theoretical analysis reveals peaked distributions over admissible sets lead to sublinear coverage under realistic budgets. Stratified decoding by structural complexity is introduced as a training-free mitigation. Three structured domains instantiate the benchmark: (1) Causal inference from perturbations (DAG inference), (2) 3D voxel reconstruction under gravity from 2D projections, (3) Boolean genetic interactions from phenotype observations. Models generate N hypotheses, which are validated against exact ground truth and deduplicated.",
+    "grounding_mechanisms": [
+      "deduction",
+      "literature_comparison"
+    ],
+    "grounding_notes": "Deduction is implicit in the theoretical analysis (Section 4) showing that peaked distributions mathematically lead to sublinear coverage bounds via probability theory (Equations 4-5 in the paper): E[RR(N)] depends on tail probabilities, and achieving constant probability of observing hypothesis h requires N=Theta(1/epsilon), yielding inevitable coverage collapse. Literature comparison grounds the work by contextualizing within creativity evaluation frameworks (Guilford, Amabile, Boden taxonomies) and positioning against prior creative benchmarks (HypoBench, IdeaBench, CreativEval, LiveIdeaBench). The paper explicitly contrasts its approach of deterministic validators and enumerated admissible sets against LLM-as-judge approaches in prior work.",
+    "datasets": [
+      "Causal Inference from Perturbations (three difficulty levels: nodes=4,5,6 with |H_O| growing)",
+      "3D Voxel Reconstruction (three difficulty levels: dimensions 2x2x2 to 3x3x3 with |H_O| up to 27)",
+      "Boolean Genetic Interactions (three difficulty levels: basic to full complexity)",
+      "Real-world yeast vesicle-trafficking module from Costanzo et al. (2016) with 6 genes, 6 single-KO and 7 double-KO observations, |H*| ranging from 108 to 38 hypotheses"
+    ],
+    "baselines": [
+      "GPT-5 (OpenAI, 2025-08-07)",
+      "Gemini-2.5-Pro (Google, 2025-06-17)",
+      "Claude-Opus-4 (Anthropic, 2025-05-22)",
+      "DeepSeek-R1 (DeepSeek, 2025-01-20)",
+      "Grok-4 (xAI, 2025-07-09)",
+      "GPT-4o (OpenAI, 2024-05-13)",
+      "LLaMA-3.3-70B-Instruct (Meta, 2024-12-06)"
+    ],
+    "metrics": [
+      "Validity Rate (VR): |Valid|/N - fraction of proposed hypotheses consistent with observations",
+      "Uniqueness/Novelty Rate (NR): |Unique|/N - non-redundancy among proposals after deduplication",
+      "Recovery Rate (RR): |Valid & Novel|/|H_O| - coverage of enumerated admissible set",
+      "Expected Recovery E[RR(N)]: 1/M * sum(1-(1-p(h))^N) for h in H_O",
+      "Information-theoretic metrics: Cumulative entropy, Information gain per query",
+      "Model Preferences: Generation rate (Simple vs Complex), RR_S and RR_C (recovery on simple/complex subsets), RR Gap",
+      "Error decomposition: Parse failures, Constraint violations, Invalid, Exact duplicates, Canonical duplicates"
+    ],
+    "key_results": "Frontier reasoning models (GPT-5, Gemini-2.5-Pro, Grok-4, DeepSeek-R1) maintain near-ceiling Validity (90-100%) but show significant degradation in Uniqueness and Recovery as hypothesis space size grows. For Boolean genetic interactions (hardest task), Recovery rates collapse to 24-51% (Hard difficulty) from 89-100% (Simple). Non-reasoning models (GPT-4o, LLaMA-70B) exhibit more severe degradation across all metrics. Real-world genetic interaction data shows stronger models achieve 100% recovery while weaker models fail entirely (VR=0% with high NR, indicating diverse but invalid outputs). Stratified decoding partially mitigates coverage collapse (e.g., Claude-Opus-4 on Boolean: RR +7.7% on simple, +10.2% on complex), though improvements are modest (+3-20%). Information-theoretic analysis reveals reasoning models sustain higher cumulative entropy and marginal information gain per query, while non-reasoning models plateau earlier. All models exhibit systematic bias toward simple hypotheses and false convergence (claiming sufficiency despite objective incompleteness).",
+    "code_links": [
+      "https://github.com/CTT-Pavilion/_HypoSpace"
+    ],
+    "relevance_to_hypothesis": "Highly relevant but as a diagnostic/evaluation framework rather than a grounding method. HypoSpace directly tests whether LLMs generate higher quality ideas by measuring coverage and diversity of hypothesis spaces. However, it differs from the hypothesis: it does NOT employ explicit grounding mechanisms (deduction from theory, induction from observations, outcome imagination, small experiments, proposal writing, or literature comparison) to improve generation. Instead, it evaluates LLM sampling distributions and failure modes under underdetermination. The stratified decoding intervention addresses coverage by reshaping the sampling distribution via structural complexity prompting, but this is a decoding-time fix rather than a grounding mechanism that fundamentally changes how novelty is generated. The paper demonstrates that without grounding/diversity-promoting interventions, LLMs fail to cover hypothesis spaces, providing empirical evidence that unguided generation produces concentrated distributions\u2014which aligns with the hypothesis that grounded generation (via external knowledge, theory, experiments, etc.) could improve coverage and novelty.",
+    "limitations": "1) Benchmark limited to three structured, controlled domains with deterministic validators and enumerable solution spaces; generalizability to open-ended, real-world scientific hypothesis generation uncertain. 2) Observation/hypothesis language restricted to specific formalisms (DAGs for causal, Boolean expressions for genetic, voxel coordinates for 3D); may not capture rich scientific hypotheses in natural language. 3) Canonicalizer for deduplication is task-specific; superficially different but semantically equivalent hypotheses may be miscounted. 4) Stratified decoding requires task-specific complexity definitions and ground-truth distribution estimates, limiting scalability. 5) No systematic exploration of grounding mechanisms (literature retrieval, external knowledge, prompt engineering for novelty) to improve coverage\u2014only stratified decoding tested. 6) Real-world validation limited to one yeast genetic module; broader empirical grounding needed. 7) Analysis conditional on peaked LLM distributions; theoretical predictions assume specific probability mass assumptions that may not hold for all model families. 8) Cost-efficiency varies dramatically across models ($0.05/M tokens for LLaMA-3.3 vs $8.69/M for Gemini-2.5), limiting reproducibility and fair comparison across research groups."
+  },
+  {
+    "arxiv": "2606.12071v1",
+    "one_liner": "Paper demonstrates LLM judges suffer from \"novelty mirage\" - rating model-generated research questions as highly novel while human experts prefer author-anchored reference questions, revealing unreliability of LLMs for novelty assessment.",
+    "problem": "LLMs are increasingly used to both generate and evaluate scientific ideas, but there is no rigorous understanding of whether LLM-based novelty judgments align with human expert assessments. Full evaluation of research ideas is difficult because it requires assessing method, feasibility, and empirical promise simultaneously. This creates a need for studying novelty evaluation on a cleaner upstream object that can be systematically compared: research questions (RQs), which serve as prerequisites for scientific ideation and can be directly compared against actual questions pursued in published papers.",
+    "method": "The paper introduces RQ-Bench, a benchmark constructed from recent arXiv papers. For each paper in the dataset, the authors reconstruct author-anchored research questions derived from the paper's cited background, identified gaps, and stated contributions. These author-anchored RQs serve as reference points for testing novelty judgments. The evaluation employs three distinct approaches: (1) Standalone LLM judging - where LLMs evaluate individual RQs for novelty; (2) Comparative LLM judging - where LLMs perform side-by-side comparisons between model-generated and author-anchored RQs; (3) Human expert evaluation - where domain experts assess the novelty and quality of RQs. The study also specifically tests whether RQs exhibit narrowness or source-boundedness (dependency on specific papers/datasets), dimensions hypothesized to be missed by LLM evaluators.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "small_experiments"
+    ],
+    "grounding_notes": "Literature comparison mechanism: The RQ-Bench construction method grounds novelty evaluation through explicit comparison to prior published research. Author-anchored RQs are extracted from paper backgrounds and contributions, creating a direct literature baseline for comparing model-generated questions. The human expert evaluation provides empirical validation through comparison with LLM judgments. Small experiments mechanism: The paper conducts controlled experiments comparing LLM judges to human expert assessments across multiple LLM models and evaluation paradigms (standalone vs. comparative). The explicit testing for narrowness/source-boundedness represents targeted empirical investigation of specific judgment failure modes. The core finding - the novelty mirage phenomenon - emerges from systematic comparison of standalone vs. comparative evaluation results, demonstrating empirical discovery of evaluation artifacts.",
+    "datasets": [
+      "RQ-Bench (benchmark constructed from recent arXiv papers; exact paper count and domain breakdown not specified in available abstract; paper metadata indicates 45 pages suggesting substantial dataset)"
+    ],
+    "baselines": [
+      "Standalone LLM judging (various LLM models used as judges, specific model names/versions not provided in abstract)",
+      "Comparative LLM judging (side-by-side comparison mode)",
+      "Human domain expert evaluation (reference standard for novelty assessment)"
+    ],
+    "metrics": [
+      "Novelty rating scales (standalone LLM judgments of model-generated RQs)",
+      "Preference judgments (comparative LLM judgments selecting preferred RQ between author-anchored vs. model-generated)",
+      "Narrowness/source-boundedness evaluation (dimension for detecting RQ limitations)",
+      "Domain expert preference judgments (alignment metric between LLM and human assessments)"
+    ],
+    "key_results": "LLM judges consistently rate model-generated research questions as highly novel, contradicting expert human assessment - this mismatch is termed the \"novelty mirage.\" In comparative (side-by-side) evaluations, the LLM bias toward model-generated RQs becomes even stronger. Domain experts reach the opposite conclusion from LLM judges, preferring author-anchored reference questions over model-generated ones. Many generated RQs exhibit narrowness or source-bound characteristics (dependency on specific papers/techniques), but LLM judges frequently fail to detect these limitations unless explicitly prompted to evaluate this dimension. The fundamental finding is a serious disconnect between LLM-based and human-expert novelty assessments, suggesting LLM judges are unreliable for scientific novelty evaluation. This contradicts the findings from related work (e.g., Si et al. 2024: \"Can LLMs Generate Novel Research Ideas?\") where LLM-generated ideas were rated as more novel than human ideas - suggesting potential dataset, domain, or evaluation methodology differences.",
+    "code_links": [
+      "No explicit code repositories or HuggingFace links mentioned in available abstract; paper metadata does not indicate public code release at time of evaluation"
+    ],
+    "relevance_to_hypothesis": "CRITICAL RELEVANCE - CONTRADICTORY FINDING: This paper argues against the hypothesis under study. The hypothesis proposes that grounding novelty assessment through specific mechanisms (deduction, induction, proposal writing, outcome imagination, small experiments, literature comparison) should improve LLM-generated idea quality and/or evaluation reliability. This paper demonstrates that even with literature-grounded evaluation (author-anchored RQs extracted from paper backgrounds/contributions), LLM judges still exhibit systematic biases - the \"novelty mirage.\" This suggests that: (1) LLM-as-judge reliability may be fundamentally compromised regardless of grounding approach, (2) Grounding novelty evaluation at the research question level (upstream of full idea evaluation) doesn't resolve LLM evaluation failures, (3) Domain expertise and explicit testing for narrowness are necessary to catch LLM evaluation failures. The paper's small-experiments mechanism (comparing standalone vs. comparative judging) reveals evaluation artifacts that single-prompt approaches miss. This has important implications for the hypothesis: grounding mechanisms may improve idea *generation* quality but may not reliably improve LLM *evaluation* of those ideas.",
+    "limitations": "1) Dataset size and domain coverage not fully specified in abstract (45-page paper suggests substantial work but exact scale unclear). 2) Specific LLM models tested not enumerated in abstract - limitations on which models exhibit novelty mirage unknown. 3) Human expert evaluation scale/inter-rater agreement metrics not provided in abstract - reliability of expert baseline unclear. 4) Root causes of novelty mirage not deeply analyzed in abstract (unclear if issue is prompt design, model training, or fundamental LLM limitation). 5) Generalizability to non-RQ-based evaluation unknown (whether findings transfer to full research proposals/papers). 6) Paper does not appear to provide public code/data releases for reproduction or extension. 7) The paper's critical stance on LLM-as-judge creates potential publication bias toward negative findings; unclear if positive aspects of LLM evaluation are under-emphasized."
+  },
+  {
+    "arxiv": "2511.02238v1",
+    "one_liner": "LLM-driven ideation framework grounded in scientific concept networks (keyword co-occurrence + contextual relationships) with explore-expand-evolve workflow and critic engine trained on reviewer feedback achieves 10.67% quality improvement.",
+    "problem": "Previous research ideation methods rely on simplistic approaches (keyword co-occurrence, semantic similarity) that overlook complex contextual relationships between scientific concepts essential for leveraging knowledge in scientific literature. LLM-driven methods often fail to effectively utilize scientific concept networks, limiting grounding of ideas in established research.",
+    "method": "Deep Ideation framework integrates: (1) Scientific concept network capturing keyword co-occurrence and contextual relationships from literature; (2) Explore-expand-evolve workflow iteratively refining ideas through three phases (explore research areas, expand connections, evolve ideas); (3) Idea Stack data structure tracking candidate ideas by priority; (4) Critic engine trained on real-world reviewer feedback providing continuous evaluation of novelty and feasibility; (5) LLM agents traversing the network to identify gaps and generate grounded ideas.",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "small_experiments",
+      "induction"
+    ],
+    "grounding_notes": "Literature comparison: Scientific concept network explicitly grounds ideas in established research by capturing keyword co-occurrence and contextual relationships from papers. Small experiments: Critic engine trained on real reviewer feedback (empirical data from actual peer review) evaluates and iteratively refines ideas. Induction: System observes patterns in literature (papers mentioning both keyword A and B present integrated research ideas) and learns to generate ideas from these patterns. Ablation studies validate component effectiveness.",
+    "datasets": [
+      "Scientific literature corpus (co-occurrence and contextual relationships extracted)",
+      "Real-world reviewer feedback dataset (for critic engine training)"
+    ],
+    "baselines": [
+      "Keyword co-occurrence methods",
+      "Semantic similarity approaches",
+      "LLM methods using only internal knowledge",
+      "Other contemporary ideation systems (specific baseline names not enumerated in available abstract)"
+    ],
+    "metrics": [
+      "Quality improvement percentage (10.67%)",
+      "Human evaluation of practical research value",
+      "Conference acceptance level assessment",
+      "Ablation study component effectiveness analysis"
+    ],
+    "key_results": "10.67% improvement in research idea quality compared to other methods; generated ideas surpass typical top-tier conference acceptance standards; human evaluation confirmed practical value for scientific research; ablation studies validated effectiveness of each workflow component (explore-expand-evolve workflow, Idea Stack, critic engine).",
+    "code_links": [
+      "https://github.com/kyZhao-1/Deep-Ideation"
+    ],
+    "relevance_to_hypothesis": "Directly supports hypothesis: Deep Ideation grounds novelty through multiple mechanisms (literature_comparison via scientific concept network, small_experiments via critic engine trained on reviewer feedback, induction via pattern learning from papers), demonstrating that grounded ideation produces higher quality ideas (10.67% improvement) compared to unguided/less grounded baselines.",
+    "limitations": "Abstract and available documentation do not specify: (1) exact dataset sizes for scientific literature corpus or reviewer feedback dataset; (2) specific baseline paper names/methods used in comparison; (3) computational requirements or scalability limitations; (4) scope of domains/fields tested; (5) detailed metric definitions beyond quality percentage; (6) human evaluation sample size or inter-rater agreement; (7) whether ideas were actually implemented or only assessed by reviewing."
+  },
+  {
+    "arxiv": "2511.07448",
+    "one_liner": "Survey of 5 families of LLM-based scientific idea generation methods (knowledge augmentation, prompt steering, inference-time scaling, multi-agent collaboration, parameter adaptation) mapped to Boden/Rhodes creativity frameworks to analyze novelty-validity tradeoffs.",
+    "problem": "Scientific idea generation requires joint satisfaction of novelty (departure from existing knowledge) and valueness (correctness, plausibility, feasibility). Current LLMs struggle to balance creative novelty with scientific soundness, and evaluation remains subjective/non-standardized. Existing methods predominantly achieve combinatorial or exploratory creativity, with transformational creativity elusive.",
+    "method": "Systematic survey synthesizing 5 method families: (1) External knowledge augmentation via semantic/relational retrieval (RAG, knowledge graphs); (2) Prompt-based distributional steering (persona priming, constraint-based queries, structured prompts, multilingual approaches); (3) Inference-time scaling through local sequential refinement, population-based search (beam), and tree-structured exploration; (4) Multi-agent collaboration simulating team dynamics (debate, critique, role specialization); (5) Parameter-level adaptation (fine-tuning, RLHF, preference optimization). Analysis uses Boden taxonomy (combinatorial/exploratory/transformational creativity) and Rhodes 4Ps framework (Person/Process/Press/Product).",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "deduction",
+      "induction",
+      "small_experiments",
+      "outcome_imagination",
+      "proposal_writing"
+    ],
+    "grounding_notes": "The survey demonstrates multiple grounding mechanisms: (1) Literature_comparison: RAG/semantic retrieval and relational knowledge graphs enable novelty assessment by exposing structure invisible to nearest-neighbor search (GoAI achieves 3.83 novelty vs Chain-of-Ideas 3.21 vs vanilla 2.44). (2) Deduction: Chain-of-Ideas and Bit-Flip-Spark use theory->prediction reasoning (baseline assumption, flip, spark insight). (3) Induction: Program-level ideation generates structured protocols tested via simulators with results looped back as reward signals. (4) Small_experiments: Robin's lab-in-the-loop tests hypotheses via in silico simulators; ChemCrow validates reaction pathways using cheminformatics tools; SCaSML integrates physical laws as constraints. (5) Outcome_imagination: Scientific priors constrain generation to plausible bounds; feedback sources (self-evaluation, peer LLMs, simulators, external tools, human-in-the-loop) guide exploration toward feasible outcomes. (6) Proposal_writing: Structured creative prompts scaffold systematic ideation with explicit reasoning steps. Key insight: grounding in structured knowledge enables novel recombinations while preventing arbitrary ideas\u2014the press (environmental context) dimension contributes novelty precisely because external knowledge introduces novelty while preserving correctness.",
+    "datasets": [
+      "SciMuse (100 research group leaders for evaluation)",
+      "GoAI (Graph of AI Ideas - large-scale AI research idea generation study)",
+      "Semantic Scholar",
+      "EuropePMC"
+    ],
+    "baselines": [
+      "PaperQA",
+      "LitLLM",
+      "Ideasynth",
+      "Chain-of-Ideas",
+      "SciMON",
+      "Chain-of-Thought",
+      "Denial Prompting",
+      "Bit-Flip-Spark",
+      "Self-Refine",
+      "MC-NEST",
+      "MAGIC",
+      "Monte Carlo Thought Search",
+      "ResearchAgent",
+      "Robin",
+      "CycleResearcher",
+      "Creative Preference Optimization (CRPO)",
+      "Diverse Preference Optimization (DivPO)",
+      "VirSci",
+      "IRIS"
+    ],
+    "metrics": [
+      "Elo-based novelty scoring",
+      "Average composite score (novelty+valueness)",
+      "Originality via TTCT-inspired framework",
+      "Fluency, flexibility, elaboration (valueness dimensions)",
+      "Diversity of generated ideas",
+      "Feasibility (resource requirements)",
+      "Utility/impact assessment",
+      "Human expert evaluation",
+      "LLM-as-a-Judge (prompt-based, fine-tuned, RL-optimized variants)"
+    ],
+    "key_results": "GoAI (structured graph-based ideation): novelty 3.83, average 3.39 vs Chain-of-Ideas: novelty 3.21, average 3.27 vs vanilla LLM prompting: novelty 2.44, average 2.70. Persona prompting shows novelty 4.23, valueness 4.62; Chain-of-Thought shows valueness 4.75, novelty 3.76. Knowledge augmentation supports combinatorial creativity through novel concept recombinations. Inference-time scaling emphasizes process dimension. Multi-agent collaboration fosters emergent cross-disciplinary thinking. Current methods remain at combinatorial/exploratory levels; transformational creativity elusive. Key tradeoffs: higher retrieval quality reduces diversity (overfitting to passages); RLHF reduces entropy pushing toward safer outputs; confidence miscalibration in self-evaluation; risk of reward hacking in peer evaluators.",
+    "code_links": [],
+    "relevance_to_hypothesis": "HIGHLY RELEVANT. This survey directly validates the hypothesis that LLMs generate higher-quality scientific ideas when novelty is grounded through structured mechanisms vs unguided generation. Evidence: (1) GoAI's structured graph-based approach (literature_comparison + relational knowledge grounding) dramatically outperforms vanilla LLM (3.39 vs 2.70 average). (2) Multiple grounding mechanisms systematically discussed\u2014knowledge augmentation (literature_comparison), Bit-Flip-Spark (deduction), simulator feedback (small_experiments), scientific priors (outcome_imagination), structured prompts (proposal_writing). (3) Survey explicitly frames grounding as preventing 'arbitrary or incoherent ideas' while enabling novel recombinations. (4) Five method families each represent different grounding approaches, all contrasted against unguided baselines. (5) Rhodes 4Ps framework emphasizes press (environmental/contextual grounding) as creativity source. The survey's core thesis\u2014that joint satisfaction of novelty AND valueness requires grounding\u2014directly supports hypothesis that grounding mechanisms improve scientific idea quality beyond pure novelty.",
+    "limitations": "Survey is organizational/taxonomic rather than empirical\u2014synthesizes existing literature without conducting new experiments. Lacks comprehensive standardized benchmarks for scientific ideation evaluation; most evaluation remains subjective/domain-specific or relies on LLM-as-Judge (potentially biased). Limited explicit dataset sizes/specifications beyond SciMuse (100 evaluators) and general references to knowledge sources. No GitHub links or reproducible code provided. Evaluation metrics not consistently applied across different method families. Authors acknowledge: (1) current architectural constraints (autoregressive/attention-based) may fundamentally limit transformational creativity; (2) trade-offs in grounding approaches (e.g., RAG reduces diversity despite improving retrieval quality); (3) RLHF training paradoxically reduces creative output entropy; (4) self-confidence miscalibration problem; (5) reward hacking risks in peer/simulator evaluators. Future work needed on agent-level search, domain-rich simulators, and shifting evaluation paradigms."
+  },
+  {
+    "arxiv": "2409.04109",
+    "one_liner": "First large-scale head-to-head comparison of LLM vs 100+ expert NLP researchers shows LLM-generated research ideas are rated significantly more novel (p<0.05) but slightly weaker on feasibility, while revealing critical limitations in diversity and self-evaluation.",
+    "problem": "Whether current LLMs can generate novel, expert-level research ideas comparable to human researchers. This is the foundational step of scientific discovery and essential for autonomous research agents to perform ideation tasks.",
+    "method": "Head-to-head experimental design with blind peer review comparing human experts vs LLM ideation agent. 49 expert NLP researchers recruited to write prompting research ideas across 7 topics (Bias, Coding, Safety, Multilingual, Factuality, Math, Uncertainty). 79 expert reviewers (104 total unique participants) provided blind reviews. Three conditions: human-written ideas (N=49), AI-generated ideas (N=49), AI+human-reranked ideas (N=49). LLM agent: retrieval-augmented (k=10 papers prepended), generates 4000 ideas/topic, deduplicates at 0.8 cosine similarity, ranks via Claude-3.5-Sonnet pairwise comparisons (N=5 Swiss tournament rounds trained on 1200 ICLR 2024 submissions). Statistical testing: Welch's t-tests with Bonferroni correction across three independent designs (reviews/ideas/reviewers as datapoints).",
+    "grounding_mechanisms": [
+      "literature_comparison",
+      "induction",
+      "deduction",
+      "proposal_writing",
+      "none_unguided"
+    ],
+    "grounding_notes": "Primary grounding: literature comparison via retrieval augmentation (top-10 papers by title+abstract prepended to generation prompt). Secondary grounding: induction (LLM explicitly asked to avoid repetitions via previous idea titles in prompt), deduction (Swiss tournament pairwise ranking trained on ICLR 2024 acceptance data), proposal_writing (structured template enforced for all ideas). Critical limitation revealed: retrieval-augmented grounding insufficient\u2014only 200 unique ideas from 4000 attempts per topic (5% diversity). Pairwise ranking achieves only 53.3% consistency vs human 56.1%, indicating LLM cannot reliably evaluate grounded ideas. Paper identifies fundamental gap: grounding through literature retrieval and proposal structure does not prevent quality degradation during ranking/filtering phases.",
+    "datasets": [
+      "Human idea writing: 49 ideas from expert NLP researchers on 7 topics",
+      "ICLR 2024 LLM-related submissions (N=1200) used to train pairwise ranker",
+      "4000 generated seed ideas per topic (7 topics; ~200 unique per topic after deduplication at 0.8 threshold)"
+    ],
+    "baselines": [
+      "Human expert researchers: 49 PhD/postdoc writers from 26 institutions (avg 12 papers, 477 citations, h-index 5)",
+      "Human expert reviewers: 79 reviewers from 32 institutions, mostly PhD/postdoc (avg 15 papers, 635 citations, h-index 7; 72/79 previously reviewed for major venues)",
+      "LLM rankers tested: Claude-3.5-Sonnet (71.4% pairwise accuracy on ICLR data), GPT-4o (61.1%), Claude-3-Opus (63.5%)",
+      "LLM-as-judge baselines: Direct score prediction, pairwise comparison, AI Scientist reviewer agent"
+    ],
+    "metrics": [
+      "Novelty Score (1-10 scale): AI Ideas \u03bc=5.64\u00b1\u03c3=1.76 vs Human \u03bc=4.84\u00b1\u03c3=1.79 (p<0.01); AI+Rerank \u03bc=5.81\u00b1\u03c3=1.66 (p<0.001)",
+      "Excitement Score (1-10): AI \u03bc=5.19\u00b11.73 vs Human \u03bc=4.55\u00b11.89 (p<0.05); AI+Rerank \u03bc=5.46\u00b11.82 (p<0.01)",
+      "Feasibility Score (1-10): AI \u03bc=6.34\u00b11.88 vs Human \u03bc=6.61\u00b11.99 (p=1.00, not significant)",
+      "Expected Effectiveness Score (1-10): All comparable (AI \u03bc=5.47; Human \u03bc=5.13)",
+      "Overall Score (1-10): AI \u03bc=4.85\u00b11.70; Human \u03bc=4.68\u00b11.90; AI+Rerank \u03bc=5.34\u00b11.79 (p<0.05)",
+      "Inter-reviewer consistency (balanced accuracy): Ours 56.1%; NeurIPS'21 66.0%; ICLR'24 71.9%; Human-AI agreement: GPT-4o Direct 50.0%, Claude-3.5 Pairwise 53.3%",
+      "Idea duplication rate: 95% duplication at 4000 ideas per topic (only 5% unique retained)"
+    ],
+    "key_results": "AI-generated ideas rated significantly more novel than human expert ideas across all three statistical tests (Novelty difference: AI +0.80 points p<0.01; AI+Rerank +0.97 p<0.001). Excitement also significantly higher for AI (p<0.05 and p<0.01). Feasibility slightly lower for AI but not significant (p=1.00). Collected 298 unique expert reviews (avg 3.8 reviews/reviewer, 32 min/review, 232 words). Human experts report their submitted ideas ~top 43% of all past ideas (median-level due to 10-day constraint; 37/49 generated on-the-spot). Novelty and excitement drive overall score (r=0.725 and r=0.854) but feasibility barely correlates (r=0.097). Qualitative failures: vague implementation details, dataset misuse, insufficient literature grounding. LLM ranker 71.4% accurate on ICLR but only 53.3% consistent on collected ideas. Manual human reranking outperforms LLM on 32/49 ideas, showing significant LLM-human selection discrepancy. Reviewers achieved only 56.1% inter-agreement (lower than conference reviewing 66-72%).",
+    "code_links": [
+      "https://github.com/NoviScl/AI-Researcher (agent implementation and human review scores)",
+      "https://tinyurl.com/execution-study (follow-up study recruiting researchers to execute ideas)"
+    ],
+    "relevance_to_hypothesis": "Highly relevant. Paper directly tests whether LLM-generated ideas are superior when grounded through literature comparison and proposal structure vs ungrounded human ideation. Results support hypothesis that grounding via retrieval+prompting yields higher perceived novelty (p<0.05). However, reveals critical nuance: grounding mechanisms improve novelty perception but do NOT prevent two major failure modes\u2014lack of diversity (95% duplication) and unreliable self-evaluation (53.3% LLM judge vs 56.1% human consistency). Suggests grounding novelty generation is orthogonal to ensuring genuine originality and sound evaluation. AI+Human Rerank outperforms pure AI ranker, indicating grounding operates at generation-time but fails during ranking/filtering. This is key insight: grounding improves idea quality perception at generation but cannot substitute for expert evaluation of grounded ideas.",
+    "limitations": "Study scope limited to prompting-based NLP research only (not generalizable to other domains). Novelty/feasibility evaluated on written ideas only, not executed research\u2014subjective judgment, not real outcomes. Inter-reviewer consistency only 56.1% vs conference baseline 66-72%, raising questions about evaluation validity. Human participants primarily US-based due to logistics (US-biased sample). Human experts submitted median-level ideas (~top 43%) within 10-day constraint, not best ideas (downward bias on human baseline). LLM agent uses only Claude-3.5-Sonnet for ranking; generalization unclear (GPT-4o, Opus lower accuracy on ICLR data). Deduplication threshold 0.8 set via manual inspection; sensitivity unexplored. Sample size modest (N=49/condition); insufficient power for feasibility/effectiveness sub-analyses. No control for prompt engineering, temperature, decoding strategy. Confounding: AI ideas longer (1186 words) vs human (902 words)\u2014may inflate novelty perception. EMNLP 2024 overlap analysis pre-registered but results pending."
+  }
+]
